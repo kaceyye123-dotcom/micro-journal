@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kacey 微记</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
@@ -584,11 +585,134 @@
     font-size: 0.75rem;
     margin-bottom: 0.4rem;
   }
+
+  /* 登录页 */
+  .auth-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 80vh;
+  }
+  .auth-card {
+    background: #fff;
+    border-radius: 20px;
+    padding: 2rem 1.5rem;
+    width: 100%;
+    max-width: 360px;
+    border: 1px solid #e0ecf5;
+    box-shadow: 0 4px 20px #0ea5e915;
+  }
+  .auth-card h2 {
+    text-align: center;
+    font-size: 1.3rem;
+    margin-bottom: 1.5rem;
+    background: linear-gradient(135deg, #38bdf8, #0ea5e9);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .auth-field {
+    margin-bottom: 1rem;
+  }
+  .auth-field label {
+    display: block;
+    font-size: 0.82rem;
+    color: #64748b;
+    margin-bottom: 0.3rem;
+  }
+  .auth-field input {
+    width: 100%;
+    padding: 0.65rem 0.8rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    font-size: 0.92rem;
+    font-family: inherit;
+    background: #f8fafc;
+    color: #2d3748;
+  }
+  .auth-field input:focus { outline: none; border-color: #38bdf8; }
+  .auth-btn {
+    width: 100%;
+    padding: 0.7rem;
+    background: linear-gradient(135deg, #38bdf8, #0ea5e9);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    margin-top: 0.5rem;
+  }
+  .auth-btn:hover { opacity: 0.9; }
+  .auth-switch {
+    text-align: center;
+    margin-top: 1rem;
+    font-size: 0.82rem;
+    color: #64748b;
+  }
+  .auth-switch a {
+    color: #0ea5e9;
+    cursor: pointer;
+    text-decoration: none;
+    font-weight: 600;
+  }
+  .auth-error {
+    color: #ef4444;
+    font-size: 0.8rem;
+    text-align: center;
+    margin-top: 0.5rem;
+    min-height: 1.2rem;
+  }
+  .logout-btn {
+    background: none;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    color: #94a3b8;
+    font-size: 0.72rem;
+    padding: 0.2rem 0.6rem;
+    cursor: pointer;
+    font-family: inherit;
+    float: right;
+    margin-top: -0.3rem;
+  }
+  .logout-btn:hover { color: #0284c7; border-color: #0ea5e9; }
+  .sync-status {
+    text-align: center;
+    font-size: 0.7rem;
+    color: #94a3b8;
+    margin-bottom: 0.5rem;
+  }
 </style>
 </head>
 <body>
-<div class="container">
-  <h1>📓 Kacey 微记</h1>
+<!-- 登录页 -->
+<div class="container auth-page" id="authPage">
+  <div class="auth-card">
+    <h2>📓 Kacey 微记</h2>
+    <div id="authForm">
+      <div class="auth-field">
+        <label>邮箱</label>
+        <input type="email" id="authEmail" placeholder="your@email.com">
+      </div>
+      <div class="auth-field">
+        <label>密码</label>
+        <input type="password" id="authPassword" placeholder="至少6位">
+      </div>
+      <button class="auth-btn" id="authBtn" onclick="handleAuth()">登录</button>
+      <div class="auth-error" id="authError"></div>
+      <div class="auth-switch">
+        <span id="authSwitchText">还没有账号？</span>
+        <a onclick="toggleAuthMode()" id="authSwitchLink">注册</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 主应用 -->
+<div class="container" id="appPage" style="display:none">
+  <h1>📓 Kacey 微记 <button class="logout-btn" onclick="handleLogout()">退出</button></h1>
+  <div class="sync-status" id="syncStatus">☁️ 已连接云端</div>
 
   <div class="tabs">
     <button class="tab-btn active" onclick="switchTab('journal')">📓 日记</button>
@@ -755,14 +879,109 @@
 <div class="toast" id="toast"></div>
 
 <script>
+// ============ Supabase 初始化 ============
+const SUPABASE_URL = 'https://dzqhucvyvsemsqtrrqrs.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_lFt7zsxeJ6heKa9SM6-nUQ_tOVGCRWc';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+let currentUser = null;
+
+// ============ 认证 ============
+let isLoginMode = true;
+
+function toggleAuthMode() {
+  isLoginMode = !isLoginMode;
+  document.getElementById('authBtn').textContent = isLoginMode ? '登录' : '注册';
+  document.getElementById('authSwitchText').textContent = isLoginMode ? '还没有账号？' : '已有账号？';
+  document.getElementById('authSwitchLink').textContent = isLoginMode ? '注册' : '登录';
+  document.getElementById('authError').textContent = '';
+}
+
+async function handleAuth() {
+  const email = document.getElementById('authEmail').value.trim();
+  const password = document.getElementById('authPassword').value;
+  const errEl = document.getElementById('authError');
+  errEl.textContent = '';
+  if (!email || !password) { errEl.textContent = '请填写邮箱和密码'; return; }
+  if (password.length < 6) { errEl.textContent = '密码至少6位'; return; }
+
+  document.getElementById('authBtn').disabled = true;
+  document.getElementById('authBtn').textContent = '请稍候...';
+
+  let result;
+  if (isLoginMode) {
+    result = await sb.auth.signInWithPassword({ email, password });
+  } else {
+    result = await sb.auth.signUp({ email, password });
+  }
+
+  document.getElementById('authBtn').disabled = false;
+  document.getElementById('authBtn').textContent = isLoginMode ? '登录' : '注册';
+
+  if (result.error) {
+    errEl.textContent = result.error.message;
+    return;
+  }
+  if (!isLoginMode && result.data?.user?.identities?.length === 0) {
+    errEl.textContent = '该邮箱已注册，请直接登录';
+    return;
+  }
+  if (!isLoginMode) {
+    errEl.style.color = '#0284c7';
+    errEl.textContent = '注册成功！请查收验证邮件，或直接登录';
+    return;
+  }
+  currentUser = result.data.user;
+  showApp();
+}
+
+async function handleLogout() {
+  await sb.auth.signOut();
+  currentUser = null;
+  document.getElementById('authPage').style.display = '';
+  document.getElementById('appPage').style.display = 'none';
+}
+
+async function checkSession() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) {
+    currentUser = session.user;
+    showApp();
+  }
+}
+
+async function showApp() {
+  document.getElementById('authPage').style.display = 'none';
+  document.getElementById('appPage').style.display = '';
+  await loadAll();
+}
+
 // ============ 通用 ============
-const KEYS = {
-  entries: 'micro_journal_entries',
-  ideas: 'micro_journal_ideas',
-  kanban: 'micro_journal_kanban',
-};
-function load(key) { return JSON.parse(localStorage.getItem(key) || '[]'); }
-function save(key, data) { localStorage.setItem(key, JSON.stringify(data)); }
+let cachedEntries = [], cachedIdeas = [], cachedKanban = [];
+
+async function loadAll() {
+  const uid = currentUser.id;
+  const [e, i, k] = await Promise.all([
+    sb.from('entries').select('*').eq('user_id', uid).order('created_at', { ascending: false }),
+    sb.from('ideas').select('*').eq('user_id', uid).order('created_at', { ascending: false }),
+    sb.from('kanban').select('*').eq('user_id', uid).order('created_at', { ascending: true }),
+  ]);
+  cachedEntries = (e.data || []).map(r => ({ ...r, _id: r.id }));
+  cachedIdeas = (i.data || []).map(r => ({ ...r, _id: r.id, id: r.id }));
+  cachedKanban = (k.data || []).map(r => ({ ...r, _id: r.id, id: r.id }));
+  document.getElementById('dateDisplay').textContent = formatDate(new Date().toISOString());
+  renderStreak();
+  renderTimeline();
+  renderIdeas();
+  renderKanban();
+  document.getElementById('syncStatus').textContent = '☁️ 已同步';
+}
+
+function load(table) {
+  if (table === 'entries') return cachedEntries;
+  if (table === 'ideas') return cachedIdeas;
+  if (table === 'kanban') return cachedKanban;
+  return [];
+}
 
 function formatDate(iso) {
   const d = new Date(iso);
@@ -798,7 +1017,7 @@ function switchTab(name) {
 
 // ============ 日记模块 ============
 function calcStreak() {
-  const entries = load(KEYS.entries);
+  const entries = load('entries');
   if (entries.length === 0) return { streak: 0, dates: new Set() };
   const dates = new Set(entries.map(e => e.date));
   let streak = 0;
@@ -845,7 +1064,7 @@ function highlightText(text, q) {
 }
 
 function renderTimeline() {
-  const entries = load(KEYS.entries);
+  const entries = load('entries');
   const q = (document.getElementById('searchInput')?.value || '').trim().toLowerCase();
   const el = document.getElementById('timeline');
   let filtered = entries;
@@ -870,14 +1089,17 @@ function renderTimeline() {
   }).join('');
 }
 
-function deleteEntry(i) {
+async function deleteEntry(i) {
   if (!confirm('确定删除？')) return;
-  const e = load(KEYS.entries); e.splice(i,1); save(KEYS.entries,e);
+  const e = load('entries')[i];
+  if (!e) return;
+  await sb.from('entries').delete().eq('id', e._id);
+  cachedEntries.splice(i, 1);
   renderTimeline(); renderStreak();
 }
 
 function copyEntry(i) {
-  const e = load(KEYS.entries)[i];
+  const e = load('entries')[i];
   let t = `📓 ${formatDate(e.date)}\n`;
   if (e.highlight) t += `✨ ${e.highlight}\n`;
   if (e.lesson) t += `💡 ${e.lesson}\n`;
@@ -885,25 +1107,23 @@ function copyEntry(i) {
   navigator.clipboard.writeText(t).then(() => showToast('📋 已复制'));
 }
 
-function entryToKanban(i) {
-  const e = load(KEYS.entries)[i];
+async function entryToKanban(i) {
+  const e = load('entries')[i];
   const title = e.highlight || e.lesson || e.goal;
   if (!title) return;
-  const items = load(KEYS.kanban);
-  items.push({ id: genId(), title, status: 'want', source: '日记', created: Date.now() });
-  save(KEYS.kanban, items);
+  const { data } = await sb.from('kanban').insert({ user_id: currentUser.id, title, status: 'want', source: '日记' }).select().single();
+  if (data) cachedKanban.push({ ...data, id: data.id, _id: data.id });
   renderKanban();
   showToast('🎬 已添加到选题看板');
 }
 
-document.getElementById('saveBtn').addEventListener('click', () => {
+document.getElementById('saveBtn').addEventListener('click', async () => {
   const h = document.getElementById('highlight').value.trim();
   const l = document.getElementById('lesson').value.trim();
   const g = document.getElementById('goal').value.trim();
   if (!h && !l && !g) return;
-  const entries = load(KEYS.entries);
-  entries.unshift({ date: todayStr(), highlight: h, lesson: l, goal: g });
-  save(KEYS.entries, entries);
+  const { data } = await sb.from('entries').insert({ user_id: currentUser.id, date: todayStr(), highlight: h, lesson: l, goal: g }).select().single();
+  if (data) cachedEntries.unshift({ ...data, _id: data.id });
   document.getElementById('highlight').value = '';
   document.getElementById('lesson').value = '';
   document.getElementById('goal').value = '';
@@ -924,7 +1144,7 @@ document.getElementById('styleChips').addEventListener('click', e => {
 function toggleCopywriter() { document.getElementById('copywriterPanel').classList.toggle('show'); }
 
 function generateCopy() {
-  const entries = load(KEYS.entries);
+  const entries = load('entries');
   if (!entries.length) { showToast('❌ 先写一篇日记吧'); return; }
   const recent = entries.slice(0,3);
   const { streak } = calcStreak();
@@ -963,13 +1183,13 @@ function copyCopyText() {
 
 // --- 导出 ---
 function exportJSON() {
-  const e = load(KEYS.entries);
+  const e = load('entries');
   if (!e.length) { showToast('❌ 没有记录'); return; }
   downloadBlob(new Blob([JSON.stringify(e,null,2)],{type:'application/json'}), `微日记_${todayStr()}.json`);
   showToast('💾 已导出');
 }
 function exportMarkdown() {
-  const entries = load(KEYS.entries);
+  const entries = load('entries');
   if (!entries.length) { showToast('❌ 没有记录'); return; }
   const { streak } = calcStreak();
   let md = `# 📓 Kacey 微记\n\n> 连续打卡 ${streak} 天 | 共 ${entries.length} 条记录\n\n---\n\n`;
@@ -1006,38 +1226,36 @@ document.getElementById('ideaFilters').addEventListener('click', e => {
   renderIdeas();
 });
 
-function saveIdea() {
+async function saveIdea() {
   const input = document.getElementById('ideaInput');
   const text = input.value.trim();
   if (!text) return;
-  const ideas = load(KEYS.ideas);
-  ideas.unshift({ id: genId(), text, tag: ideaTag, time: Date.now() });
-  save(KEYS.ideas, ideas);
+  const { data } = await sb.from('ideas').insert({ user_id: currentUser.id, text, tag: ideaTag, time: Date.now() }).select().single();
+  if (data) cachedIdeas.unshift({ ...data, id: data.id, _id: data.id });
   input.value = '';
   input.focus();
   showToast('💡 灵感已记录');
   renderIdeas();
 }
 
-function deleteIdea(id) {
-  const ideas = load(KEYS.ideas).filter(i => i.id !== id);
-  save(KEYS.ideas, ideas);
+async function deleteIdea(id) {
+  await sb.from('ideas').delete().eq('id', id);
+  cachedIdeas = cachedIdeas.filter(i => i.id !== id);
+  selectedIdeas.delete(id);
   renderIdeas();
 }
 
-function ideaToKanban(id) {
-  const ideas = load(KEYS.ideas);
-  const idea = ideas.find(i => i.id === id);
+async function ideaToKanban(id) {
+  const idea = cachedIdeas.find(i => i.id === id);
   if (!idea) return;
-  const items = load(KEYS.kanban);
-  items.push({ id: genId(), title: idea.text, status: 'want', source: '灵感', created: Date.now() });
-  save(KEYS.kanban, items);
+  const { data } = await sb.from('kanban').insert({ user_id: currentUser.id, title: idea.text, status: 'want', source: '灵感' }).select().single();
+  if (data) cachedKanban.push({ ...data, id: data.id, _id: data.id });
   renderKanban();
   showToast('🎬 已加入选题看板');
 }
 
 function renderIdeas() {
-  const ideas = load(KEYS.ideas);
+  const ideas = load('ideas');
   const filtered = ideaFilter === 'all' ? ideas : ideas.filter(i => i.tag === ideaFilter);
   document.getElementById('ideaCount').textContent = `(${filtered.length}/${ideas.length})`;
   const el = document.getElementById('ideaList');
@@ -1124,7 +1342,7 @@ async function translateAll(texts, targetLang) {
 }
 
 async function generateVideoCopy() {
-  const allIdeas = load(KEYS.ideas);
+  const allIdeas = load('ideas');
   if (!allIdeas.length) { showToast('❌ 先记几条灵感吧'); return; }
   const ideas = selectedIdeas.size > 0 ? allIdeas.filter(i => selectedIdeas.has(i.id)) : allIdeas;
   const topics = ideas.filter(i => i.tag === '选题').map(i => i.text);
@@ -1325,7 +1543,7 @@ function copyVideoCopyText() {
 let dragId = null;
 
 function renderKanban() {
-  const items = load(KEYS.kanban);
+  const items = load('kanban');
   ['want','doing','done'].forEach(status => {
     const col = document.getElementById('col-' + status);
     const cards = items.filter(i => i.status === status);
@@ -1348,12 +1566,11 @@ function showKanbanInput(status) {
   if (wrap.style.display === 'block') wrap.querySelector('input').focus();
 }
 
-function addKanbanCard(status, title) {
+async function addKanbanCard(status, title) {
   title = title.trim();
   if (!title) return;
-  const items = load(KEYS.kanban);
-  items.push({ id: genId(), title, status, source: '', created: Date.now() });
-  save(KEYS.kanban, items);
+  const { data } = await sb.from('kanban').insert({ user_id: currentUser.id, title, status, source: '' }).select().single();
+  if (data) cachedKanban.push({ ...data, id: data.id, _id: data.id });
   const wrap = document.getElementById('input-' + status);
   wrap.querySelector('input').value = '';
   wrap.style.display = 'none';
@@ -1361,9 +1578,9 @@ function addKanbanCard(status, title) {
   showToast('🎬 已添加');
 }
 
-function deleteKanbanCard(id) {
-  const items = load(KEYS.kanban).filter(i => i.id !== id);
-  save(KEYS.kanban, items);
+async function deleteKanbanCard(id) {
+  await sb.from('kanban').delete().eq('id', id);
+  cachedKanban = cachedKanban.filter(i => i.id !== id);
   renderKanban();
 }
 
@@ -1376,21 +1593,20 @@ function kanbanDragEnd(e) {
   e.target.classList.remove('dragging');
   dragId = null;
 }
-function kanbanDrop(e, status) {
+async function kanbanDrop(e, status) {
   e.preventDefault();
   if (!dragId) return;
-  const items = load(KEYS.kanban);
-  const card = items.find(i => i.id === dragId);
-  if (card) { card.status = status; save(KEYS.kanban, items); renderKanban(); }
+  const card = cachedKanban.find(i => i.id === dragId);
+  if (card) {
+    card.status = status;
+    await sb.from('kanban').update({ status }).eq('id', dragId);
+    renderKanban();
+  }
   dragId = null;
 }
 
 // ============ 初始化 ============
-document.getElementById('dateDisplay').textContent = formatDate(new Date().toISOString());
-renderStreak();
-renderTimeline();
-renderIdeas();
-renderKanban();
+checkSession();
 </script>
 </body>
 </html>
