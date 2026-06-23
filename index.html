@@ -1,0 +1,1394 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kacey 微记</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: #0f0f0f;
+    color: #e0e0e0;
+    min-height: 100vh;
+    padding: 1rem 1rem 2rem;
+  }
+  .container { max-width: 520px; margin: 0 auto; }
+  h1 {
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 0.6rem;
+    background: linear-gradient(135deg, #f093fb, #f5576c, #fda085);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  /* 标签页导航 */
+  .tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: 1.2rem;
+    background: #1a1a1a;
+    border-radius: 12px;
+    padding: 4px;
+    border: 1px solid #2a2a2a;
+  }
+  .tab-btn {
+    flex: 1;
+    padding: 0.55rem 0;
+    background: transparent;
+    border: none;
+    border-radius: 9px;
+    color: #777;
+    font-size: 0.85rem;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .tab-btn.active {
+    background: #f5576c;
+    color: #fff;
+    font-weight: 600;
+  }
+  .tab-page { display: none; }
+  .tab-page.active { display: block; }
+
+  /* 连续打卡 */
+  .streak-bar { text-align: center; margin-bottom: 1rem; }
+  .streak-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    border-radius: 20px;
+    padding: 0.3rem 0.9rem;
+    font-size: 0.82rem;
+    color: #fda085;
+  }
+  .streak-num { font-weight: 700; font-size: 1rem; color: #f5576c; }
+  .streak-cal {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+    margin-top: 0.4rem;
+    flex-wrap: wrap;
+  }
+  .streak-dot {
+    width: 10px; height: 10px;
+    border-radius: 3px;
+    background: #222;
+    border: 1px solid #333;
+  }
+  .streak-dot.active { background: #f5576c; border-color: #f5576c; }
+  .streak-dot.today { box-shadow: 0 0 0 2px #f5576c55; }
+
+  .date-display {
+    text-align: center;
+    font-size: 0.85rem;
+    color: #888;
+    margin-bottom: 1.2rem;
+  }
+  .input-card {
+    background: #1a1a1a;
+    border-radius: 16px;
+    padding: 1.3rem;
+    margin-bottom: 1rem;
+    border: 1px solid #2a2a2a;
+  }
+  .field { margin-bottom: 1rem; }
+  .field:last-of-type { margin-bottom: 1.2rem; }
+  .field label {
+    display: block;
+    font-size: 0.82rem;
+    color: #aaa;
+    margin-bottom: 0.35rem;
+  }
+  .field label .icon { margin-right: 0.3rem; }
+  .field textarea, .field input[type="text"] {
+    width: 100%;
+    background: #111;
+    border: 1px solid #333;
+    border-radius: 10px;
+    padding: 0.6rem 0.8rem;
+    color: #e0e0e0;
+    font-size: 0.92rem;
+    font-family: inherit;
+    resize: none;
+    transition: border-color 0.2s;
+  }
+  .field textarea { height: 48px; }
+  .field textarea:focus, .field input:focus {
+    outline: none;
+    border-color: #f5576c;
+  }
+  .save-btn, .action-btn {
+    width: 100%;
+    padding: 0.7rem;
+    background: linear-gradient(135deg, #f093fb, #f5576c);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.1s;
+    font-family: inherit;
+  }
+  .save-btn:hover, .action-btn:hover { opacity: 0.9; }
+  .save-btn:active, .action-btn:active { transform: scale(0.98); }
+
+  /* 工具栏 */
+  .toolbar {
+    display: flex;
+    gap: 0.4rem;
+    margin-bottom: 1.2rem;
+    flex-wrap: wrap;
+  }
+  .toolbar button {
+    flex: 1;
+    min-width: 0;
+    padding: 0.5rem 0.3rem;
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    border-radius: 10px;
+    color: #aaa;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+    white-space: nowrap;
+  }
+  .toolbar button:hover { background: #222; color: #e0e0e0; border-color: #444; }
+
+  /* 搜索栏 */
+  .search-bar { display: none; margin-bottom: 1rem; }
+  .search-bar.show { display: block; }
+  .search-bar input {
+    width: 100%;
+    background: #111;
+    border: 1px solid #333;
+    border-radius: 10px;
+    padding: 0.6rem 0.8rem;
+    color: #e0e0e0;
+    font-size: 0.88rem;
+    font-family: inherit;
+  }
+  .search-bar input:focus { outline: none; border-color: #a78bfa; }
+  .search-bar .search-hint {
+    font-size: 0.72rem;
+    color: #555;
+    margin-top: 0.25rem;
+    padding-left: 0.2rem;
+  }
+  mark {
+    background: #f5576c44;
+    color: #f5576c;
+    border-radius: 2px;
+    padding: 0 2px;
+  }
+
+  /* 文案生成器 */
+  .copywriter-panel { display: none; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 16px; padding: 1.1rem; margin-bottom: 1rem; }
+  .copywriter-panel.show { display: block; }
+  .copywriter-panel h3 { font-size: 0.88rem; color: #fda085; margin-bottom: 0.7rem; }
+  .style-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.8rem; }
+  .style-chip {
+    padding: 0.25rem 0.6rem;
+    background: #222;
+    border: 1px solid #333;
+    border-radius: 8px;
+    font-size: 0.78rem;
+    color: #aaa;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+  }
+  .style-chip.active { background: #f5576c33; color: #f5576c; border-color: #f5576c66; }
+  .copy-output {
+    background: #111;
+    border: 1px solid #333;
+    border-radius: 10px;
+    padding: 0.8rem;
+    font-size: 0.85rem;
+    line-height: 1.7;
+    color: #ccc;
+    min-height: 70px;
+    white-space: pre-wrap;
+    position: relative;
+    margin-top: 0.8rem;
+  }
+  .copy-output .copy-btn {
+    position: absolute;
+    top: 0.4rem;
+    right: 0.4rem;
+    background: #222;
+    border: 1px solid #444;
+    border-radius: 6px;
+    color: #aaa;
+    font-size: 0.72rem;
+    padding: 0.15rem 0.45rem;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .copy-output .copy-btn:hover { color: #fff; }
+  .gen-btn {
+    width: 100%;
+    padding: 0.55rem;
+    background: linear-gradient(135deg, #fda085, #f5576c);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .gen-btn:hover { opacity: 0.9; }
+  .gen-hint { font-size: 0.72rem; color: #555; margin-top: 0.35rem; text-align: center; }
+
+  .toast {
+    position: fixed;
+    top: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(-80px);
+    background: #222;
+    color: #4ade80;
+    padding: 0.55rem 1.1rem;
+    border-radius: 10px;
+    font-size: 0.88rem;
+    transition: transform 0.3s ease;
+    z-index: 99;
+    border: 1px solid #333;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  .section-header {
+    font-size: 0.95rem;
+    color: #888;
+    margin-bottom: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .section-header::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #2a2a2a;
+  }
+
+  /* 日记条目 */
+  .entry {
+    background: #1a1a1a;
+    border-radius: 14px;
+    padding: 1.1rem 1.2rem;
+    margin-bottom: 0.7rem;
+    border: 1px solid #2a2a2a;
+    position: relative;
+    animation: fadeIn 0.3s ease;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .entry-date { font-size: 0.75rem; color: #666; margin-bottom: 0.6rem; }
+  .entry-row {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.3rem;
+    font-size: 0.88rem;
+    line-height: 1.5;
+  }
+  .entry-row .tag {
+    flex-shrink: 0;
+    font-size: 0.75rem;
+    padding: 0.08rem 0.45rem;
+    border-radius: 6px;
+    height: fit-content;
+    margin-top: 0.15rem;
+  }
+  .tag-highlight { background: #f5576c22; color: #f5576c; }
+  .tag-lesson { background: #a78bfa22; color: #a78bfa; }
+  .tag-goal { background: #38bdf822; color: #38bdf8; }
+  .entry-actions {
+    position: absolute;
+    top: 0.7rem;
+    right: 0.7rem;
+    display: flex;
+    gap: 0.25rem;
+  }
+  .entry-actions button {
+    background: none;
+    border: none;
+    color: #444;
+    cursor: pointer;
+    font-size: 0.78rem;
+    padding: 0.15rem 0.35rem;
+    border-radius: 6px;
+    transition: color 0.2s, background 0.2s;
+  }
+  .entry-actions button:hover { color: #f5576c; background: #f5576c15; }
+  .entry-actions .btn-copy:hover { color: #4ade80; background: #4ade8015; }
+  .empty, .no-results {
+    text-align: center;
+    color: #555;
+    font-size: 0.88rem;
+    padding: 1.5rem 0;
+  }
+
+  /* ====== 灵感速记 ====== */
+  .idea-quick {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.8rem;
+  }
+  .idea-quick input {
+    flex: 1;
+    background: #111;
+    border: 1px solid #333;
+    border-radius: 10px;
+    padding: 0.6rem 0.8rem;
+    color: #e0e0e0;
+    font-size: 0.92rem;
+    font-family: inherit;
+  }
+  .idea-quick input:focus { outline: none; border-color: #fda085; }
+  .idea-quick button {
+    background: linear-gradient(135deg, #fda085, #f5576c);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 0 1rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    white-space: nowrap;
+  }
+  .idea-tags {
+    display: flex;
+    gap: 0.35rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+  }
+  .idea-tag {
+    padding: 0.22rem 0.6rem;
+    background: #222;
+    border: 1px solid #333;
+    border-radius: 8px;
+    font-size: 0.78rem;
+    color: #aaa;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+  }
+  .idea-tag.active { border-color: #fda08588; color: #fda085; background: #fda08520; }
+  .idea-filter-row {
+    display: flex;
+    gap: 0.35rem;
+    margin-bottom: 0.8rem;
+    flex-wrap: wrap;
+  }
+  .idea-filter {
+    padding: 0.2rem 0.55rem;
+    background: transparent;
+    border: 1px solid #333;
+    border-radius: 7px;
+    font-size: 0.72rem;
+    color: #666;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
+  }
+  .idea-filter.active { border-color: #fda08566; color: #fda085; }
+  .idea-card {
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    border-radius: 12px;
+    padding: 0.8rem 1rem;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    animation: fadeIn 0.25s ease;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .idea-card-body { flex: 1; min-width: 0; }
+  .idea-card-text { font-size: 0.88rem; line-height: 1.5; word-break: break-word; }
+  .idea-card-meta {
+    display: flex;
+    gap: 0.4rem;
+    margin-top: 0.35rem;
+    align-items: center;
+  }
+  .idea-card-tag {
+    font-size: 0.7rem;
+    padding: 0.1rem 0.4rem;
+    border-radius: 5px;
+    background: #fda08518;
+    color: #fda085;
+  }
+  .idea-card-time { font-size: 0.68rem; color: #555; }
+  .idea-card-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    flex-shrink: 0;
+  }
+  .idea-card-actions button {
+    background: none;
+    border: none;
+    color: #444;
+    cursor: pointer;
+    font-size: 0.75rem;
+    padding: 0.15rem 0.3rem;
+    border-radius: 5px;
+    transition: all 0.15s;
+  }
+  .idea-card-actions button:hover { color: #fda085; background: #fda08515; }
+  .idea-card-actions .btn-del:hover { color: #f5576c; background: #f5576c15; }
+  .idea-card.selected { border-color: #fda08566; background: #fda08510; }
+  .idea-check {
+    width: 18px; height: 18px;
+    border-radius: 5px;
+    border: 1.5px solid #444;
+    background: transparent;
+    cursor: pointer;
+    flex-shrink: 0;
+    margin-top: 0.15rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    color: transparent;
+    transition: all 0.15s;
+  }
+  .idea-card.selected .idea-check { border-color: #fda085; background: #fda085; color: #fff; }
+  .select-hint { font-size: 0.72rem; color: #555; margin-bottom: 0.6rem; }
+  .selected-count { color: #fda085; font-weight: 600; }
+
+  /* ====== 选题看板 ====== */
+  .kanban {
+    display: flex;
+    gap: 0.5rem;
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+  }
+  .kanban-col {
+    flex: 1;
+    min-width: 150px;
+    background: #141414;
+    border: 1px solid #2a2a2a;
+    border-radius: 14px;
+    padding: 0.7rem;
+  }
+  .kanban-col-header {
+    font-size: 0.78rem;
+    font-weight: 600;
+    margin-bottom: 0.6rem;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+  .kanban-col-header .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .dot-want { background: #fda085; }
+  .dot-doing { background: #a78bfa; }
+  .dot-done { background: #4ade80; }
+  .kanban-col-count {
+    font-size: 0.68rem;
+    color: #555;
+    font-weight: 400;
+    margin-left: auto;
+  }
+  .kanban-card {
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    border-radius: 10px;
+    padding: 0.65rem 0.75rem;
+    margin-bottom: 0.4rem;
+    cursor: grab;
+    transition: all 0.15s;
+    position: relative;
+  }
+  .kanban-card:active { cursor: grabbing; }
+  .kanban-card.dragging { opacity: 0.4; transform: scale(0.95); }
+  .kanban-card-title {
+    font-size: 0.82rem;
+    line-height: 1.4;
+    word-break: break-word;
+    padding-right: 1.2rem;
+  }
+  .kanban-card-source {
+    font-size: 0.65rem;
+    color: #555;
+    margin-top: 0.3rem;
+  }
+  .kanban-card-actions {
+    position: absolute;
+    top: 0.4rem;
+    right: 0.4rem;
+    display: flex;
+    gap: 0.15rem;
+  }
+  .kanban-card-actions button {
+    background: none;
+    border: none;
+    color: #444;
+    cursor: pointer;
+    font-size: 0.7rem;
+    padding: 0.1rem 0.25rem;
+    border-radius: 4px;
+  }
+  .kanban-card-actions button:hover { color: #f5576c; background: #f5576c15; }
+  .kanban-add {
+    width: 100%;
+    padding: 0.4rem;
+    background: transparent;
+    border: 1px dashed #333;
+    border-radius: 8px;
+    color: #555;
+    font-size: 0.75rem;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
+  }
+  .kanban-add:hover { border-color: #555; color: #888; }
+  .kanban-input-wrap { margin-bottom: 0.4rem; }
+  .kanban-input-wrap input {
+    width: 100%;
+    background: #111;
+    border: 1px solid #444;
+    border-radius: 8px;
+    padding: 0.45rem 0.6rem;
+    color: #e0e0e0;
+    font-size: 0.82rem;
+    font-family: inherit;
+  }
+  .kanban-input-wrap input:focus { outline: none; border-color: #fda085; }
+
+  .drop-hint {
+    border: 2px dashed #f5576c55;
+    border-radius: 10px;
+    padding: 0.8rem;
+    text-align: center;
+    color: #f5576c55;
+    font-size: 0.75rem;
+    margin-bottom: 0.4rem;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>📓 Kacey 微记</h1>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('journal')">📓 日记</button>
+    <button class="tab-btn" onclick="switchTab('ideas')">💡 灵感</button>
+    <button class="tab-btn" onclick="switchTab('kanban')">🎬 选题</button>
+  </div>
+
+  <!-- ========== 日记页 ========== -->
+  <div class="tab-page active" id="page-journal">
+    <div class="streak-bar">
+      <div class="streak-badge">
+        <span>🔥</span>
+        <span>连续打卡</span>
+        <span class="streak-num" id="streakNum">0</span>
+        <span>天</span>
+      </div>
+      <div class="streak-cal" id="streakCal"></div>
+    </div>
+
+    <div class="date-display" id="dateDisplay"></div>
+
+    <div class="input-card">
+      <div class="field">
+        <label><span class="icon">✨</span>今日亮点</label>
+        <textarea id="highlight" placeholder="今天最棒的一件事..."></textarea>
+      </div>
+      <div class="field">
+        <label><span class="icon">💡</span>一个收获</label>
+        <textarea id="lesson" placeholder="今天学到了什么..."></textarea>
+      </div>
+      <div class="field">
+        <label><span class="icon">🎯</span>明日目标</label>
+        <textarea id="goal" placeholder="明天要做的一件事..."></textarea>
+      </div>
+      <button class="save-btn" id="saveBtn">保存今日记录</button>
+    </div>
+
+    <div class="toolbar">
+      <button onclick="toggleSearch()">🔍 搜索</button>
+      <button onclick="toggleCopywriter()">📝 文案</button>
+      <button onclick="exportJSON()">💾 JSON</button>
+      <button onclick="exportMarkdown()">📄 MD</button>
+    </div>
+
+    <div class="search-bar" id="searchBar">
+      <input type="text" id="searchInput" placeholder="输入关键词搜索..." oninput="renderTimeline()">
+      <div class="search-hint">搜索亮点、收获、目标中的内容</div>
+    </div>
+
+    <div class="copywriter-panel" id="copywriterPanel">
+      <h3>📝 自媒体文案生成器</h3>
+      <div class="style-chips" id="styleChips">
+        <button class="style-chip active" data-style="xiaohongshu">小红书</button>
+        <button class="style-chip" data-style="weibo">微博</button>
+        <button class="style-chip" data-style="douyin">抖音</button>
+        <button class="style-chip" data-style="zhihu">知乎</button>
+      </div>
+      <button class="gen-btn" onclick="generateCopy()">✨ 一键生成</button>
+      <div class="gen-hint">从最近日记提取素材</div>
+      <div class="copy-output" id="copyOutput" style="display:none">
+        <button class="copy-btn" onclick="copyCopyText()">复制</button>
+        <span id="copyText"></span>
+      </div>
+    </div>
+
+    <div class="section-header">往期回顾</div>
+    <div id="timeline"></div>
+  </div>
+
+  <!-- ========== 灵感速记页 ========== -->
+  <div class="tab-page" id="page-ideas">
+    <div class="input-card">
+      <div class="idea-quick">
+        <input type="text" id="ideaInput" placeholder="一句话记下灵感..." onkeydown="if(event.key==='Enter')saveIdea()">
+        <button onclick="saveIdea()">记💡</button>
+      </div>
+      <div class="idea-tags" id="ideaTagPicker">
+        <button class="idea-tag active" data-tag="选题">选题</button>
+        <button class="idea-tag" data-tag="台词">台词</button>
+        <button class="idea-tag" data-tag="画面">画面</button>
+        <button class="idea-tag" data-tag="BGM">BGM</button>
+        <button class="idea-tag" data-tag="其他">其他</button>
+      </div>
+    </div>
+
+    <div class="idea-filter-row" id="ideaFilters">
+      <button class="idea-filter active" data-filter="all">全部</button>
+      <button class="idea-filter" data-filter="选题">选题</button>
+      <button class="idea-filter" data-filter="台词">台词</button>
+      <button class="idea-filter" data-filter="画面">画面</button>
+      <button class="idea-filter" data-filter="BGM">BGM</button>
+      <button class="idea-filter" data-filter="其他">其他</button>
+    </div>
+
+    <div class="toolbar">
+      <button onclick="toggleIdeaCopy()">📝 生成视频文案</button>
+    </div>
+
+    <div class="copywriter-panel" id="ideaCopyPanel">
+      <h3>🎬 视频文案生成器</h3>
+      <div style="margin-bottom:0.6rem">
+        <div style="font-size:0.78rem;color:#888;margin-bottom:0.3rem">视频类型</div>
+        <div class="style-chips" id="videoStyleChips">
+          <button class="style-chip active" data-style="vlog">Vlog</button>
+          <button class="style-chip" data-style="tutorial">教程</button>
+          <button class="style-chip" data-style="story">故事</button>
+          <button class="style-chip" data-style="review">测评</button>
+        </div>
+      </div>
+      <div style="margin-bottom:0.6rem">
+        <div style="font-size:0.78rem;color:#888;margin-bottom:0.3rem">语言</div>
+        <div class="style-chips" id="langChips">
+          <button class="style-chip active" data-lang="zh">中文</button>
+          <button class="style-chip" data-lang="en">English</button>
+          <button class="style-chip" data-lang="zh-en">中英双语</button>
+          <button class="style-chip" data-lang="zh-fr">中法双语</button>
+          <button class="style-chip" data-lang="zh-es">中西双语</button>
+        </div>
+      </div>
+      <div class="select-hint">💡 在下方灵感列表中勾选要用的素材（不选则用最新的）<span class="selected-count" id="selectedCount"></span></div>
+      <button class="gen-btn" onclick="generateVideoCopy()">🎬 生成视频文案</button>
+      <div class="gen-hint">从选中的灵感提取素材，生成标题+脚本+标签</div>
+      <div class="copy-output" id="videoCopyOutput" style="display:none">
+        <button class="copy-btn" onclick="copyVideoCopyText()">复制</button>
+        <span id="videoCopyText"></span>
+      </div>
+    </div>
+
+    <div class="section-header">灵感库 <span id="ideaCount" style="font-size:0.75rem;color:#555"></span></div>
+    <div id="ideaList"></div>
+  </div>
+
+  <!-- ========== 选题看板页 ========== -->
+  <div class="tab-page" id="page-kanban">
+    <div class="kanban" id="kanbanBoard">
+      <div class="kanban-col" data-status="want" ondrop="kanbanDrop(event,'want')" ondragover="event.preventDefault()">
+        <div class="kanban-col-header"><span class="dot dot-want"></span>想拍 <span class="kanban-col-count" id="count-want"></span></div>
+        <div id="col-want"></div>
+        <button class="kanban-add" onclick="showKanbanInput('want')">+ 添加选题</button>
+        <div class="kanban-input-wrap" id="input-want" style="display:none">
+          <input type="text" placeholder="输入选题..." onkeydown="if(event.key==='Enter')addKanbanCard('want',this.value)">
+        </div>
+      </div>
+      <div class="kanban-col" data-status="doing" ondrop="kanbanDrop(event,'doing')" ondragover="event.preventDefault()">
+        <div class="kanban-col-header"><span class="dot dot-doing"></span>在拍 <span class="kanban-col-count" id="count-doing"></span></div>
+        <div id="col-doing"></div>
+        <button class="kanban-add" onclick="showKanbanInput('doing')">+ 添加选题</button>
+        <div class="kanban-input-wrap" id="input-doing" style="display:none">
+          <input type="text" placeholder="输入选题..." onkeydown="if(event.key==='Enter')addKanbanCard('doing',this.value)">
+        </div>
+      </div>
+      <div class="kanban-col" data-status="done" ondrop="kanbanDrop(event,'done')" ondragover="event.preventDefault()">
+        <div class="kanban-col-header"><span class="dot dot-done"></span>已发 <span class="kanban-col-count" id="count-done"></span></div>
+        <div id="col-done"></div>
+        <button class="kanban-add" onclick="showKanbanInput('done')">+ 添加选题</button>
+        <div class="kanban-input-wrap" id="input-done" style="display:none">
+          <input type="text" placeholder="输入选题..." onkeydown="if(event.key==='Enter')addKanbanCard('done',this.value)">
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============ 通用 ============
+const KEYS = {
+  entries: 'micro_journal_entries',
+  ideas: 'micro_journal_ideas',
+  kanban: 'micro_journal_kanban',
+};
+function load(key) { return JSON.parse(localStorage.getItem(key) || '[]'); }
+function save(key, data) { localStorage.setItem(key, JSON.stringify(data)); }
+
+function formatDate(iso) {
+  const d = new Date(iso);
+  const weekdays = ['日','一','二','三','四','五','六'];
+  return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日 周${weekdays[d.getDay()]}`;
+}
+function formatTime(ts) {
+  const d = new Date(ts);
+  return `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+}
+function todayStr() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function genId() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 1800);
+}
+
+// ============ 标签页切换 ============
+function switchTab(name) {
+  document.querySelectorAll('.tab-btn').forEach((b, i) => {
+    b.classList.toggle('active', b.textContent.includes({'journal':'日记','ideas':'灵感','kanban':'选题'}[name]));
+  });
+  document.querySelectorAll('.tab-page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+}
+
+// ============ 日记模块 ============
+function calcStreak() {
+  const entries = load(KEYS.entries);
+  if (entries.length === 0) return { streak: 0, dates: new Set() };
+  const dates = new Set(entries.map(e => e.date));
+  let streak = 0;
+  const d = new Date();
+  let check = todayStr();
+  if (!dates.has(check)) {
+    d.setDate(d.getDate() - 1);
+    check = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  }
+  const cursor = new Date(check);
+  while (dates.has(`${cursor.getFullYear()}-${String(cursor.getMonth()+1).padStart(2,'0')}-${String(cursor.getDate()).padStart(2,'0')}`)) {
+    streak++;
+    cursor.setDate(cursor.getDate() - 1);
+  }
+  return { streak, dates };
+}
+
+function renderStreak() {
+  const { streak, dates } = calcStreak();
+  document.getElementById('streakNum').textContent = streak;
+  const cal = document.getElementById('streakCal');
+  const today = new Date();
+  const dots = [];
+  for (let i = 20; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    const ds = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    dots.push(`<div class="streak-dot${dates.has(ds)?' active':''}${i===0?' today':''}" title="${formatDate(ds)}"></div>`);
+  }
+  cal.innerHTML = dots.join('');
+}
+
+function toggleSearch() {
+  const bar = document.getElementById('searchBar');
+  bar.classList.toggle('show');
+  if (bar.classList.contains('show')) document.getElementById('searchInput').focus();
+  else { document.getElementById('searchInput').value = ''; renderTimeline(); }
+}
+
+function highlightText(text, q) {
+  if (!q) return esc(text);
+  const escaped = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return esc(text).replace(new RegExp(`(${escaped})`, 'gi'), '<mark>$1</mark>');
+}
+
+function renderTimeline() {
+  const entries = load(KEYS.entries);
+  const q = (document.getElementById('searchInput')?.value || '').trim().toLowerCase();
+  const el = document.getElementById('timeline');
+  let filtered = entries;
+  if (q) filtered = entries.filter(e =>
+    [e.highlight, e.lesson, e.goal].some(v => v && v.toLowerCase().includes(q))
+  );
+  if (!entries.length) { el.innerHTML = '<div class="empty">还没有记录，写下你的第一篇吧 ✍️</div>'; return; }
+  if (!filtered.length) { el.innerHTML = '<div class="no-results">没有找到匹配的记录</div>'; return; }
+  el.innerHTML = filtered.map(e => {
+    const ri = entries.indexOf(e);
+    return `<div class="entry">
+      <div class="entry-actions">
+        <button title="转为选题" onclick="entryToKanban(${ri})">🎬</button>
+        <button class="btn-copy" onclick="copyEntry(${ri})" title="复制">📋</button>
+        <button onclick="deleteEntry(${ri})" title="删除">✕</button>
+      </div>
+      <div class="entry-date">${formatDate(e.date)}</div>
+      ${e.highlight ? `<div class="entry-row"><span class="tag tag-highlight">亮点</span><span>${highlightText(e.highlight,q)}</span></div>` : ''}
+      ${e.lesson ? `<div class="entry-row"><span class="tag tag-lesson">收获</span><span>${highlightText(e.lesson,q)}</span></div>` : ''}
+      ${e.goal ? `<div class="entry-row"><span class="tag tag-goal">目标</span><span>${highlightText(e.goal,q)}</span></div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function deleteEntry(i) {
+  if (!confirm('确定删除？')) return;
+  const e = load(KEYS.entries); e.splice(i,1); save(KEYS.entries,e);
+  renderTimeline(); renderStreak();
+}
+
+function copyEntry(i) {
+  const e = load(KEYS.entries)[i];
+  let t = `📓 ${formatDate(e.date)}\n`;
+  if (e.highlight) t += `✨ ${e.highlight}\n`;
+  if (e.lesson) t += `💡 ${e.lesson}\n`;
+  if (e.goal) t += `🎯 ${e.goal}\n`;
+  navigator.clipboard.writeText(t).then(() => showToast('📋 已复制'));
+}
+
+function entryToKanban(i) {
+  const e = load(KEYS.entries)[i];
+  const title = e.highlight || e.lesson || e.goal;
+  if (!title) return;
+  const items = load(KEYS.kanban);
+  items.push({ id: genId(), title, status: 'want', source: '日记', created: Date.now() });
+  save(KEYS.kanban, items);
+  renderKanban();
+  showToast('🎬 已添加到选题看板');
+}
+
+document.getElementById('saveBtn').addEventListener('click', () => {
+  const h = document.getElementById('highlight').value.trim();
+  const l = document.getElementById('lesson').value.trim();
+  const g = document.getElementById('goal').value.trim();
+  if (!h && !l && !g) return;
+  const entries = load(KEYS.entries);
+  entries.unshift({ date: todayStr(), highlight: h, lesson: l, goal: g });
+  save(KEYS.entries, entries);
+  document.getElementById('highlight').value = '';
+  document.getElementById('lesson').value = '';
+  document.getElementById('goal').value = '';
+  showToast('✅ 已保存');
+  renderTimeline();
+  renderStreak();
+});
+
+// --- 文案 ---
+let currentStyle = 'xiaohongshu';
+document.getElementById('styleChips').addEventListener('click', e => {
+  const chip = e.target.closest('.style-chip');
+  if (!chip) return;
+  document.querySelectorAll('.style-chip').forEach(c => c.classList.remove('active'));
+  chip.classList.add('active');
+  currentStyle = chip.dataset.style;
+});
+function toggleCopywriter() { document.getElementById('copywriterPanel').classList.toggle('show'); }
+
+function generateCopy() {
+  const entries = load(KEYS.entries);
+  if (!entries.length) { showToast('❌ 先写一篇日记吧'); return; }
+  const recent = entries.slice(0,3);
+  const { streak } = calcStreak();
+  const hl = recent.map(e=>e.highlight).filter(Boolean);
+  const ls = recent.map(e=>e.lesson).filter(Boolean);
+  const gl = recent.map(e=>e.goal).filter(Boolean);
+  const s = streak > 0 ? streak : 1;
+  const pick = () => ['✨','💫','🌟','💡','🎯','📖','🌈','💪','🔥','⭐'][Math.random()*10|0];
+  const T = {
+    xiaohongshu: () => [
+      `${pick()} 今日份生活碎片 | 记录第${s}天`, '',
+      hl[0]?`${pick()} 今日亮点：${hl[0]}`:'', ls[0]?`${pick()} 小小收获：${ls[0]}`:'', gl[0]?`${pick()} 明日flag：${gl[0]}`:'',
+      '', `坚持记录生活的第${s}天`, `每天进步一点点 ${pick()}`, '', '#每日记录 #生活碎片 #自律打卡 #成长日记'
+    ].filter(l=>l!==undefined).join('\n'),
+    weibo: () => [
+      `📓 日记碎片 Day ${s}`, hl[0]?`亮点💡${hl[0]}`:'', ls[0]?`收获📚${ls[0]}`:'', gl[0]?`明天🎯${gl[0]}`:'',
+      '', '每天三句话，记录真实的自己。'
+    ].filter(Boolean).join('\n'),
+    douyin: () => [
+      `🔥 打卡第${s}天`, '', hl[0]?`今天最开心的事👉 ${hl[0]}`:'', ls[0]?`今天学到了👉 ${ls[0]}`:'', gl[0]?`明天要搞定👉 ${gl[0]}`:'',
+      '', '别人在刷视频 我在写日记', '坚持记录 未来的你会感谢现在的自己', '', '#日记 #自律 #每日打卡 #成长'
+    ].filter(Boolean).join('\n'),
+    zhihu: () => [
+      `【日记实验：连续记录第${s}天的感受】`, '', '从开始每天用三句话记录生活，我发现了一些变化：', '',
+      hl[0]?`今天值得记下的：${hl[0]}`:'', ls[0]?`一个小收获：${ls[0]}`:'', gl[0]?`给明天的自己：${gl[0]}`:'',
+      '', '三句话不多，但积累下来，就是一本属于自己的成长手册。', '你有记日记的习惯吗？'
+    ].filter(Boolean).join('\n')
+  };
+  document.getElementById('copyOutput').style.display = 'block';
+  document.getElementById('copyText').textContent = T[currentStyle]();
+}
+
+function copyCopyText() {
+  navigator.clipboard.writeText(document.getElementById('copyText').textContent).then(() => showToast('📋 已复制'));
+}
+
+// --- 导出 ---
+function exportJSON() {
+  const e = load(KEYS.entries);
+  if (!e.length) { showToast('❌ 没有记录'); return; }
+  downloadBlob(new Blob([JSON.stringify(e,null,2)],{type:'application/json'}), `微日记_${todayStr()}.json`);
+  showToast('💾 已导出');
+}
+function exportMarkdown() {
+  const entries = load(KEYS.entries);
+  if (!entries.length) { showToast('❌ 没有记录'); return; }
+  const { streak } = calcStreak();
+  let md = `# 📓 Kacey 微记\n\n> 连续打卡 ${streak} 天 | 共 ${entries.length} 条记录\n\n---\n\n`;
+  entries.forEach(e => {
+    md += `## ${formatDate(e.date)}\n\n`;
+    if (e.highlight) md += `- ✨ **亮点**：${e.highlight}\n`;
+    if (e.lesson) md += `- 💡 **收获**：${e.lesson}\n`;
+    if (e.goal) md += `- 🎯 **目标**：${e.goal}\n`;
+    md += '\n';
+  });
+  downloadBlob(new Blob([md],{type:'text/markdown'}), `微日记_${todayStr()}.md`);
+  showToast('📄 已导出');
+}
+function downloadBlob(b,f) { const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=f;a.click();URL.revokeObjectURL(a.href); }
+
+// ============ 灵感速记 ============
+let ideaTag = '选题';
+let ideaFilter = 'all';
+
+document.getElementById('ideaTagPicker').addEventListener('click', e => {
+  const t = e.target.closest('.idea-tag');
+  if (!t) return;
+  document.querySelectorAll('.idea-tag').forEach(b => b.classList.remove('active'));
+  t.classList.add('active');
+  ideaTag = t.dataset.tag;
+});
+
+document.getElementById('ideaFilters').addEventListener('click', e => {
+  const f = e.target.closest('.idea-filter');
+  if (!f) return;
+  document.querySelectorAll('.idea-filter').forEach(b => b.classList.remove('active'));
+  f.classList.add('active');
+  ideaFilter = f.dataset.filter;
+  renderIdeas();
+});
+
+function saveIdea() {
+  const input = document.getElementById('ideaInput');
+  const text = input.value.trim();
+  if (!text) return;
+  const ideas = load(KEYS.ideas);
+  ideas.unshift({ id: genId(), text, tag: ideaTag, time: Date.now() });
+  save(KEYS.ideas, ideas);
+  input.value = '';
+  input.focus();
+  showToast('💡 灵感已记录');
+  renderIdeas();
+}
+
+function deleteIdea(id) {
+  const ideas = load(KEYS.ideas).filter(i => i.id !== id);
+  save(KEYS.ideas, ideas);
+  renderIdeas();
+}
+
+function ideaToKanban(id) {
+  const ideas = load(KEYS.ideas);
+  const idea = ideas.find(i => i.id === id);
+  if (!idea) return;
+  const items = load(KEYS.kanban);
+  items.push({ id: genId(), title: idea.text, status: 'want', source: '灵感', created: Date.now() });
+  save(KEYS.kanban, items);
+  renderKanban();
+  showToast('🎬 已加入选题看板');
+}
+
+function renderIdeas() {
+  const ideas = load(KEYS.ideas);
+  const filtered = ideaFilter === 'all' ? ideas : ideas.filter(i => i.tag === ideaFilter);
+  document.getElementById('ideaCount').textContent = `(${filtered.length}/${ideas.length})`;
+  const el = document.getElementById('ideaList');
+  if (!ideas.length) { el.innerHTML = '<div class="empty">还没有灵感，随时记下你的想法 ⚡</div>'; return; }
+  if (!filtered.length) { el.innerHTML = '<div class="no-results">该分类暂无灵感</div>'; return; }
+  el.innerHTML = filtered.map(i => `
+    <div class="idea-card${selectedIdeas.has(i.id)?' selected':''}" onclick="toggleIdeaSelect('${i.id}')">
+      <div class="idea-check">✓</div>
+      <div class="idea-card-body">
+        <div class="idea-card-text">${esc(i.text)}</div>
+        <div class="idea-card-meta">
+          <span class="idea-card-tag">${esc(i.tag)}</span>
+          <span class="idea-card-time">${formatTime(i.time)}</span>
+        </div>
+      </div>
+      <div class="idea-card-actions">
+        <button onclick="event.stopPropagation();ideaToKanban('${i.id}')" title="转为选题">🎬</button>
+        <button class="btn-del" onclick="event.stopPropagation();deleteIdea('${i.id}')" title="删除">✕</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ============ 灵感选择 ============
+const selectedIdeas = new Set();
+
+function toggleIdeaSelect(id) {
+  if (selectedIdeas.has(id)) selectedIdeas.delete(id);
+  else selectedIdeas.add(id);
+  renderIdeas();
+  updateSelectedCount();
+}
+
+function updateSelectedCount() {
+  const el = document.getElementById('selectedCount');
+  if (el) el.textContent = selectedIdeas.size ? `（已选 ${selectedIdeas.size} 条）` : '';
+}
+
+// ============ 灵感文案生成 ============
+let videoStyle = 'vlog';
+let videoLang = 'zh';
+
+function toggleIdeaCopy() { document.getElementById('ideaCopyPanel').classList.toggle('show'); }
+
+document.getElementById('videoStyleChips').addEventListener('click', e => {
+  const c = e.target.closest('.style-chip');
+  if (!c) return;
+  document.querySelectorAll('#videoStyleChips .style-chip').forEach(b => b.classList.remove('active'));
+  c.classList.add('active');
+  videoStyle = c.dataset.style;
+});
+document.getElementById('langChips').addEventListener('click', e => {
+  const c = e.target.closest('.style-chip');
+  if (!c) return;
+  document.querySelectorAll('#langChips .style-chip').forEach(b => b.classList.remove('active'));
+  c.classList.add('active');
+  videoLang = c.dataset.lang;
+});
+
+async function translateText(text, targetLang) {
+  if (!text || targetLang === 'zh') return text;
+  const langMap = { en: 'en', fr: 'fr', es: 'es' };
+  const to = langMap[targetLang];
+  if (!to) return text;
+  try {
+    const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=zh|${to}`);
+    const data = await res.json();
+    if (data.responseStatus === 200 && data.responseData.translatedText) {
+      const t = data.responseData.translatedText;
+      if (t.toUpperCase() === text.toUpperCase()) return text;
+      return t;
+    }
+    return text;
+  } catch { return text; }
+}
+
+async function translateAll(texts, targetLang) {
+  if (targetLang === 'zh') return texts;
+  const results = [];
+  for (const t of texts) {
+    results.push(await translateText(t, targetLang));
+  }
+  return results;
+}
+
+async function generateVideoCopy() {
+  const allIdeas = load(KEYS.ideas);
+  if (!allIdeas.length) { showToast('❌ 先记几条灵感吧'); return; }
+  const ideas = selectedIdeas.size > 0 ? allIdeas.filter(i => selectedIdeas.has(i.id)) : allIdeas;
+  const topics = ideas.filter(i => i.tag === '选题').map(i => i.text);
+  const lines = ideas.filter(i => i.tag === '台词').map(i => i.text);
+  const scenes = ideas.filter(i => i.tag === '画面').map(i => i.text);
+  const bgm = ideas.filter(i => i.tag === 'BGM').map(i => i.text);
+  const all = ideas.map(i => i.text);
+  const main = topics[0] || all[0];
+
+  const needsTranslation = videoLang !== 'zh';
+  const foreignLang = videoLang === 'en' ? 'en' : videoLang === 'zh-en' ? 'en' : videoLang === 'zh-fr' ? 'fr' : videoLang === 'zh-es' ? 'es' : null;
+
+  let tMain = main, tLines = [...lines], tScenes = [...scenes], tBgm = [...bgm], tTopics = [...topics];
+  if (needsTranslation && foreignLang) {
+    showToast('🌐 正在翻译...');
+    const allTexts = [main, ...lines.slice(0,1), ...scenes.slice(0,1), ...bgm.slice(0,1)];
+    const translated = await translateAll(allTexts, foreignLang);
+    let idx = 0;
+    tMain = translated[idx++];
+    if (lines[0]) tLines[0] = translated[idx++];
+    if (scenes[0]) tScenes[0] = translated[idx++];
+    if (bgm[0]) tBgm[0] = translated[idx++];
+    tTopics = [tMain];
+  }
+
+  const langs = {
+    zh: {
+      title: '标题', script: '脚本', opening: '开场', body: '主体', closing: '结尾',
+      tags: '标签', sceneTip: '画面提示', bgmTip: 'BGM建议', refNote: '原始素材',
+      topicIntro: '今天的主题：',
+      lineIntro: '台词素材：',
+      vlog: {
+        open: '嗨大家好！今天想跟你们分享一个我最近一直在想的事情。',
+        bodyWithLine: '说到这个话题，我想先跟你们聊聊我的感受...',
+        bodyNoLine: '这件事其实特别有意思，让我慢慢说...',
+        close: '好啦今天就到这里，喜欢的话记得点赞关注，我们下期见！',
+      },
+      tut: {
+        open: '今天教大家一个超实用的技巧，看完你一定会有收获。',
+        bodyWithLine: '第一步，我们先来理解核心概念...',
+        bodyNoLine: '首先我们来看看具体怎么操作...',
+        close: '以上就是全部步骤，学会了吗？评论区告诉我！',
+      },
+      story: {
+        open: '你们知道吗？今天要跟大家分享一个让我特别有感触的故事。',
+        bodyWithLine: '事情是这样的——',
+        bodyNoLine: '接下来发生的事，让我自己都没想到...',
+        close: '故事讲完了，你怎么看？留言告诉我。',
+      },
+      rev: {
+        open: '今天来聊一个大家都很关心的话题，到底值不值？',
+        bodyWithLine: '先说我的第一印象和使用感受...',
+        bodyNoLine: '用了一段时间，说说我的真实感受...',
+        close: '总结一下，值不值得入手？我的建议是...',
+      },
+      hashTags: '#vlog #生活记录 #日常分享',
+    },
+    en: {
+      title: 'Title', script: 'Script', opening: 'Opening', body: 'Body', closing: 'Closing',
+      tags: 'Tags', sceneTip: 'Visual Notes', bgmTip: 'BGM Suggestion', refNote: 'Source material',
+      topicIntro: "Today's topic: ",
+      lineIntro: 'Script notes: ',
+      vlog: {
+        open: "Hey everyone! Today I want to share something that's been on my mind lately.",
+        bodyWithLine: "Let me start by telling you how I feel about this...",
+        bodyNoLine: "This is actually really interesting, let me tell you...",
+        close: "That's all for today! Like and subscribe, see you next time!",
+      },
+      tut: {
+        open: "Today I'll teach you a super useful trick — you'll definitely learn something new.",
+        bodyWithLine: "Step one: let's understand the core concept first...",
+        bodyNoLine: "First, let's see how it actually works...",
+        close: "That's all the steps! Did you get it? Let me know in the comments!",
+      },
+      story: {
+        open: "Did you know? Today I want to share a story that really moved me.",
+        bodyWithLine: "Here's what happened —",
+        bodyNoLine: "What happened next surprised even me...",
+        close: "That's the story. What do you think? Leave a comment.",
+      },
+      rev: {
+        open: "Let's talk about something everyone's been curious about — is it worth it?",
+        bodyWithLine: "Let me start with my first impression and experience...",
+        bodyNoLine: "After using it for a while, here's my honest take...",
+        close: "So, is it worth getting? Here's my verdict...",
+      },
+      hashTags: '#vlog #lifestyle #dailylife',
+    },
+    fr: {
+      title: 'Titre', script: 'Script', opening: 'Ouverture', body: 'Corps', closing: 'Conclusion',
+      tags: 'Tags', sceneTip: 'Notes visuelles', bgmTip: 'Suggestion BGM', refNote: 'Matériel source',
+      topicIntro: "Le sujet d'aujourd'hui : ",
+      lineIntro: 'Notes de script : ',
+      vlog: {
+        open: "Salut tout le monde ! Aujourd'hui je veux partager quelque chose qui me tient à cœur.",
+        bodyWithLine: "Laissez-moi d'abord vous dire ce que j'en pense...",
+        bodyNoLine: "C'est vraiment intéressant, laissez-moi vous raconter...",
+        close: "C'est tout pour aujourd'hui ! Likez et abonnez-vous, à la prochaine !",
+      },
+      tut: {
+        open: "Aujourd'hui je vous montre une astuce super utile — vous allez forcément apprendre quelque chose.",
+        bodyWithLine: "Première étape : comprenons d'abord le concept de base...",
+        bodyNoLine: "D'abord, voyons comment ça marche concrètement...",
+        close: "Voilà toutes les étapes ! Vous avez compris ? Dites-moi en commentaire !",
+      },
+      story: {
+        open: "Vous saviez ? Aujourd'hui je veux partager une histoire qui m'a vraiment touché(e).",
+        bodyWithLine: "Voici ce qui s'est passé —",
+        bodyNoLine: "Ce qui s'est passé ensuite m'a surpris(e) moi-même...",
+        close: "Voilà l'histoire. Qu'en pensez-vous ? Laissez un commentaire.",
+      },
+      rev: {
+        open: "Parlons d'un sujet qui intéresse tout le monde — est-ce que ça vaut le coup ?",
+        bodyWithLine: "Commençons par ma première impression et mon expérience...",
+        bodyNoLine: "Après l'avoir utilisé un moment, voici mon avis honnête...",
+        close: "Alors, ça vaut le coup ? Voici mon verdict...",
+      },
+      hashTags: '#vlog #lifestyle #quotidien',
+    },
+    es: {
+      title: 'Título', script: 'Guión', opening: 'Apertura', body: 'Cuerpo', closing: 'Cierre',
+      tags: 'Etiquetas', sceneTip: 'Notas visuales', bgmTip: 'Sugerencia BGM', refNote: 'Material fuente',
+      topicIntro: 'El tema de hoy: ',
+      lineIntro: 'Notas del guión: ',
+      vlog: {
+        open: "¡Hola a todos! Hoy quiero compartir algo en lo que he estado pensando últimamente.",
+        bodyWithLine: "Déjenme empezar contándoles cómo me siento al respecto...",
+        bodyNoLine: "Esto es realmente interesante, déjenme contarles...",
+        close: "¡Eso es todo por hoy! Dale like y suscríbete, ¡nos vemos!",
+      },
+      tut: {
+        open: "Hoy les enseño un truco súper útil — seguro aprenden algo nuevo.",
+        bodyWithLine: "Primer paso: entendamos primero el concepto base...",
+        bodyNoLine: "Primero, veamos cómo funciona en la práctica...",
+        close: "¡Esos son todos los pasos! ¿Lo lograron? ¡Díganme en los comentarios!",
+      },
+      story: {
+        open: "¿Sabían? Hoy quiero compartir una historia que me impactó mucho.",
+        bodyWithLine: "Esto es lo que pasó —",
+        bodyNoLine: "Lo que pasó después me sorprendió incluso a mí...",
+        close: "Esa es la historia. ¿Qué opinan? Dejen un comentario.",
+      },
+      rev: {
+        open: "Hablemos de algo que a todos les interesa — ¿vale la pena?",
+        bodyWithLine: "Empecemos con mi primera impresión y experiencia...",
+        bodyNoLine: "Después de usarlo un tiempo, aquí va mi opinión honesta...",
+        close: "Entonces, ¿vale la pena? Mi veredicto es...",
+      },
+      hashTags: '#vlog #estilodevida #vidadiaria',
+    },
+  };
+
+  const styleKey = { vlog:'vlog', tutorial:'tut', story:'story', review:'rev' }[videoStyle];
+
+  function buildScript(L, topic, line, scene, bgmItem) {
+    const S = L[styleKey];
+    let out = [];
+    out.push(`📌 ${L.title}`);
+    out.push(`${L.topicIntro}「${topic}」`);
+    out.push('');
+    out.push(`📝 ${L.script}:`);
+    out.push(`[${L.opening}] ${S.open}`);
+    out.push(`[${L.body}] ${line ? S.bodyWithLine : S.bodyNoLine}`);
+    if (line) out.push(`  💬 ${L.lineIntro}「${line}」`);
+    if (scene) out.push(`  🎥 ${L.sceneTip}: ${scene}`);
+    out.push(`[${L.closing}] ${S.close}`);
+    if (bgmItem) out.push(`\n🎵 ${L.bgmTip}: ${bgmItem}`);
+    out.push(`\n🏷️ ${L.tags}: ${L.hashTags}`);
+    return out.join('\n');
+  }
+
+  const zhScript = buildScript(langs.zh, main, lines[0], scenes[0], bgm[0]);
+  const foreignLangMap = { en: langs.en, fr: langs.fr, es: langs.es };
+  const foreignScript = foreignLang ? buildScript(foreignLangMap[foreignLang], tMain, tLines[0], tScenes[0], tBgm[0]) : '';
+
+  let result = '';
+  if (videoLang === 'zh') {
+    result = zhScript;
+  } else if (videoLang === 'en') {
+    result = foreignScript;
+  } else if (videoLang === 'zh-en') {
+    result = '🇨🇳 中文版\n' + zhScript + '\n\n━━━━━━━━━━\n\n🇬🇧 English Version\n' + foreignScript;
+  } else if (videoLang === 'zh-fr') {
+    result = '🇨🇳 中文版\n' + zhScript + '\n\n━━━━━━━━━━\n\n🇫🇷 Version Française\n' + foreignScript;
+  } else if (videoLang === 'zh-es') {
+    result = '🇨🇳 中文版\n' + zhScript + '\n\n━━━━━━━━━━\n\n🇪🇸 Versión en Español\n' + foreignScript;
+  }
+
+  document.getElementById('videoCopyOutput').style.display = 'block';
+  document.getElementById('videoCopyText').textContent = result;
+}
+
+function copyVideoCopyText() {
+  navigator.clipboard.writeText(document.getElementById('videoCopyText').textContent).then(() => showToast('📋 已复制'));
+}
+
+// ============ 选题看板 ============
+let dragId = null;
+
+function renderKanban() {
+  const items = load(KEYS.kanban);
+  ['want','doing','done'].forEach(status => {
+    const col = document.getElementById('col-' + status);
+    const cards = items.filter(i => i.status === status);
+    document.getElementById('count-' + status).textContent = cards.length;
+    col.innerHTML = cards.map(c => `
+      <div class="kanban-card" draggable="true" ondragstart="kanbanDragStart(event,'${c.id}')" ondragend="kanbanDragEnd(event)" id="kc-${c.id}">
+        <div class="kanban-card-title">${esc(c.title)}</div>
+        ${c.source ? `<div class="kanban-card-source">来自${esc(c.source)}</div>` : ''}
+        <div class="kanban-card-actions">
+          <button onclick="deleteKanbanCard('${c.id}')" title="删除">✕</button>
+        </div>
+      </div>
+    `).join('');
+  });
+}
+
+function showKanbanInput(status) {
+  const wrap = document.getElementById('input-' + status);
+  wrap.style.display = wrap.style.display === 'none' ? 'block' : 'none';
+  if (wrap.style.display === 'block') wrap.querySelector('input').focus();
+}
+
+function addKanbanCard(status, title) {
+  title = title.trim();
+  if (!title) return;
+  const items = load(KEYS.kanban);
+  items.push({ id: genId(), title, status, source: '', created: Date.now() });
+  save(KEYS.kanban, items);
+  const wrap = document.getElementById('input-' + status);
+  wrap.querySelector('input').value = '';
+  wrap.style.display = 'none';
+  renderKanban();
+  showToast('🎬 已添加');
+}
+
+function deleteKanbanCard(id) {
+  const items = load(KEYS.kanban).filter(i => i.id !== id);
+  save(KEYS.kanban, items);
+  renderKanban();
+}
+
+function kanbanDragStart(e, id) {
+  dragId = id;
+  e.target.classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+}
+function kanbanDragEnd(e) {
+  e.target.classList.remove('dragging');
+  dragId = null;
+}
+function kanbanDrop(e, status) {
+  e.preventDefault();
+  if (!dragId) return;
+  const items = load(KEYS.kanban);
+  const card = items.find(i => i.id === dragId);
+  if (card) { card.status = status; save(KEYS.kanban, items); renderKanban(); }
+  dragId = null;
+}
+
+// ============ 初始化 ============
+document.getElementById('dateDisplay').textContent = formatDate(new Date().toISOString());
+renderStreak();
+renderTimeline();
+renderIdeas();
+renderKanban();
+</script>
+</body>
+</html>
