@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>每日微日记</title>
+<title>Kacey 微记</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
     font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
-    background: #0f0f0f;
-    color: #e0e0e0;
+    background: #f0f7ff;
+    color: #2d3748;
     min-height: 100vh;
     padding: 1rem 1rem 2rem;
   }
@@ -19,7 +19,7 @@
     font-size: 1.5rem;
     font-weight: 600;
     margin-bottom: 0.6rem;
-    background: linear-gradient(135deg, #f093fb, #f5576c, #fda085);
+    background: linear-gradient(135deg, #38bdf8, #0ea5e9, #06b6d4);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
   }
@@ -29,10 +29,11 @@
     display: flex;
     gap: 0;
     margin-bottom: 1.2rem;
-    background: #1a1a1a;
+    background: #fff;
     border-radius: 12px;
     padding: 4px;
-    border: 1px solid #2a2a2a;
+    border: 1px solid #e0ecf5;
+    box-shadow: 0 1px 4px #0ea5e910;
   }
   .tab-btn {
     flex: 1;
@@ -40,14 +41,14 @@
     background: transparent;
     border: none;
     border-radius: 9px;
-    color: #777;
+    color: #94a3b8;
     font-size: 0.85rem;
     font-family: inherit;
     cursor: pointer;
     transition: all 0.2s;
   }
   .tab-btn.active {
-    background: #f5576c;
+    background: linear-gradient(135deg, #38bdf8, #0ea5e9);
     color: #fff;
     font-weight: 600;
   }
@@ -60,14 +61,14 @@
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
-    background: #1a1a1a;
-    border: 1px solid #2a2a2a;
+    background: #fff;
+    border: 1px solid #e0ecf5;
     border-radius: 20px;
     padding: 0.3rem 0.9rem;
     font-size: 0.82rem;
-    color: #fda085;
+    color: #0ea5e9;
   }
-  .streak-num { font-weight: 700; font-size: 1rem; color: #f5576c; }
+  .streak-num { font-weight: 700; font-size: 1rem; color: #0284c7; }
   .streak-cal {
     display: flex;
     justify-content: center;
@@ -78,41 +79,42 @@
   .streak-dot {
     width: 10px; height: 10px;
     border-radius: 3px;
-    background: #222;
-    border: 1px solid #333;
+    background: #e0ecf5;
+    border: 1px solid #cbd5e1;
   }
-  .streak-dot.active { background: #f5576c; border-color: #f5576c; }
-  .streak-dot.today { box-shadow: 0 0 0 2px #f5576c55; }
+  .streak-dot.active { background: #0ea5e9; border-color: #0ea5e9; }
+  .streak-dot.today { box-shadow: 0 0 0 2px #0ea5e955; }
 
   .date-display {
     text-align: center;
     font-size: 0.85rem;
-    color: #888;
+    color: #64748b;
     margin-bottom: 1.2rem;
   }
   .input-card {
-    background: #1a1a1a;
+    background: #fff;
     border-radius: 16px;
     padding: 1.3rem;
     margin-bottom: 1rem;
-    border: 1px solid #2a2a2a;
+    border: 1px solid #e0ecf5;
+    box-shadow: 0 1px 4px #0ea5e908;
   }
   .field { margin-bottom: 1rem; }
   .field:last-of-type { margin-bottom: 1.2rem; }
   .field label {
     display: block;
     font-size: 0.82rem;
-    color: #aaa;
+    color: #64748b;
     margin-bottom: 0.35rem;
   }
   .field label .icon { margin-right: 0.3rem; }
   .field textarea, .field input[type="text"] {
     width: 100%;
-    background: #111;
-    border: 1px solid #333;
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
     border-radius: 10px;
     padding: 0.6rem 0.8rem;
-    color: #e0e0e0;
+    color: #2d3748;
     font-size: 0.92rem;
     font-family: inherit;
     resize: none;
@@ -121,12 +123,12 @@
   .field textarea { height: 48px; }
   .field textarea:focus, .field input:focus {
     outline: none;
-    border-color: #f5576c;
+    border-color: #0284c7;
   }
   .save-btn, .action-btn {
     width: 100%;
     padding: 0.7rem;
-    background: linear-gradient(135deg, #f093fb, #f5576c);
+    background: linear-gradient(135deg, #38bdf8, #0ea5e9);
     color: #fff;
     border: none;
     border-radius: 12px;
@@ -150,70 +152,70 @@
     flex: 1;
     min-width: 0;
     padding: 0.5rem 0.3rem;
-    background: #1a1a1a;
-    border: 1px solid #2a2a2a;
+    background: #fff;
+    border: 1px solid #e0ecf5;
     border-radius: 10px;
-    color: #aaa;
+    color: #64748b;
     font-size: 0.75rem;
     cursor: pointer;
     transition: all 0.2s;
     font-family: inherit;
     white-space: nowrap;
   }
-  .toolbar button:hover { background: #222; color: #e0e0e0; border-color: #444; }
+  .toolbar button:hover { background: #f0f7ff; color: #2d3748; border-color: #94a3b8; }
 
   /* 搜索栏 */
   .search-bar { display: none; margin-bottom: 1rem; }
   .search-bar.show { display: block; }
   .search-bar input {
     width: 100%;
-    background: #111;
-    border: 1px solid #333;
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
     border-radius: 10px;
     padding: 0.6rem 0.8rem;
-    color: #e0e0e0;
+    color: #2d3748;
     font-size: 0.88rem;
     font-family: inherit;
   }
-  .search-bar input:focus { outline: none; border-color: #a78bfa; }
+  .search-bar input:focus { outline: none; border-color: #0ea5e9; }
   .search-bar .search-hint {
     font-size: 0.72rem;
-    color: #555;
+    color: #94a3b8;
     margin-top: 0.25rem;
     padding-left: 0.2rem;
   }
   mark {
-    background: #f5576c44;
-    color: #f5576c;
+    background: #0ea5e933;
+    color: #0284c7;
     border-radius: 2px;
     padding: 0 2px;
   }
 
   /* 文案生成器 */
-  .copywriter-panel { display: none; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 16px; padding: 1.1rem; margin-bottom: 1rem; }
+  .copywriter-panel { display: none; background: #fff; border: 1px solid #e0ecf5; border-radius: 16px; padding: 1.1rem; margin-bottom: 1rem; }
   .copywriter-panel.show { display: block; }
-  .copywriter-panel h3 { font-size: 0.88rem; color: #fda085; margin-bottom: 0.7rem; }
+  .copywriter-panel h3 { font-size: 0.88rem; color: #0ea5e9; margin-bottom: 0.7rem; }
   .style-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.8rem; }
   .style-chip {
     padding: 0.25rem 0.6rem;
-    background: #222;
-    border: 1px solid #333;
+    background: #f0f7ff;
+    border: 1px solid #cbd5e1;
     border-radius: 8px;
     font-size: 0.78rem;
-    color: #aaa;
+    color: #64748b;
     cursor: pointer;
     transition: all 0.2s;
     font-family: inherit;
   }
-  .style-chip.active { background: #f5576c33; color: #f5576c; border-color: #f5576c66; }
+  .style-chip.active { background: #0ea5e925; color: #0284c7; border-color: #0284c766; }
   .copy-output {
-    background: #111;
-    border: 1px solid #333;
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
     border-radius: 10px;
     padding: 0.8rem;
     font-size: 0.85rem;
     line-height: 1.7;
-    color: #ccc;
+    color: #334155;
     min-height: 70px;
     white-space: pre-wrap;
     position: relative;
@@ -223,10 +225,10 @@
     position: absolute;
     top: 0.4rem;
     right: 0.4rem;
-    background: #222;
-    border: 1px solid #444;
+    background: #f0f7ff;
+    border: 1px solid #bae6fd;
     border-radius: 6px;
-    color: #aaa;
+    color: #64748b;
     font-size: 0.72rem;
     padding: 0.15rem 0.45rem;
     cursor: pointer;
@@ -236,7 +238,7 @@
   .gen-btn {
     width: 100%;
     padding: 0.55rem;
-    background: linear-gradient(135deg, #fda085, #f5576c);
+    background: linear-gradient(135deg, #38bdf8, #0ea5e9);
     color: #fff;
     border: none;
     border-radius: 10px;
@@ -246,27 +248,27 @@
     font-family: inherit;
   }
   .gen-btn:hover { opacity: 0.9; }
-  .gen-hint { font-size: 0.72rem; color: #555; margin-top: 0.35rem; text-align: center; }
+  .gen-hint { font-size: 0.72rem; color: #94a3b8; margin-top: 0.35rem; text-align: center; }
 
   .toast {
     position: fixed;
     top: 1.5rem;
     left: 50%;
     transform: translateX(-50%) translateY(-80px);
-    background: #222;
-    color: #4ade80;
+    background: #f0f7ff;
+    color: #0284c7;
     padding: 0.55rem 1.1rem;
     border-radius: 10px;
     font-size: 0.88rem;
     transition: transform 0.3s ease;
     z-index: 99;
-    border: 1px solid #333;
+    border: 1px solid #cbd5e1;
   }
   .toast.show { transform: translateX(-50%) translateY(0); }
 
   .section-header {
     font-size: 0.95rem;
-    color: #888;
+    color: #64748b;
     margin-bottom: 0.8rem;
     display: flex;
     align-items: center;
@@ -276,16 +278,16 @@
     content: '';
     flex: 1;
     height: 1px;
-    background: #2a2a2a;
+    background: #e0ecf5;
   }
 
   /* 日记条目 */
   .entry {
-    background: #1a1a1a;
+    background: #fff;
     border-radius: 14px;
     padding: 1.1rem 1.2rem;
     margin-bottom: 0.7rem;
-    border: 1px solid #2a2a2a;
+    border: 1px solid #e0ecf5;
     position: relative;
     animation: fadeIn 0.3s ease;
   }
@@ -293,7 +295,7 @@
     from { opacity: 0; transform: translateY(8px); }
     to { opacity: 1; transform: translateY(0); }
   }
-  .entry-date { font-size: 0.75rem; color: #666; margin-bottom: 0.6rem; }
+  .entry-date { font-size: 0.75rem; color: #94a3b8; margin-bottom: 0.6rem; }
   .entry-row {
     display: flex;
     gap: 0.5rem;
@@ -309,9 +311,9 @@
     height: fit-content;
     margin-top: 0.15rem;
   }
-  .tag-highlight { background: #f5576c22; color: #f5576c; }
-  .tag-lesson { background: #a78bfa22; color: #a78bfa; }
-  .tag-goal { background: #38bdf822; color: #38bdf8; }
+  .tag-highlight { background: #0ea5e918; color: #0284c7; }
+  .tag-lesson { background: #8b5cf618; color: #0ea5e9; }
+  .tag-goal { background: #06b6d418; color: #0284c7; }
   .entry-actions {
     position: absolute;
     top: 0.7rem;
@@ -322,18 +324,18 @@
   .entry-actions button {
     background: none;
     border: none;
-    color: #444;
+    color: #94a3b8;
     cursor: pointer;
     font-size: 0.78rem;
     padding: 0.15rem 0.35rem;
     border-radius: 6px;
     transition: color 0.2s, background 0.2s;
   }
-  .entry-actions button:hover { color: #f5576c; background: #f5576c15; }
-  .entry-actions .btn-copy:hover { color: #4ade80; background: #4ade8015; }
+  .entry-actions button:hover { color: #0284c7; background: #0ea5e915; }
+  .entry-actions .btn-copy:hover { color: #0284c7; background: #0ea5e915; }
   .empty, .no-results {
     text-align: center;
-    color: #555;
+    color: #94a3b8;
     font-size: 0.88rem;
     padding: 1.5rem 0;
   }
@@ -346,17 +348,17 @@
   }
   .idea-quick input {
     flex: 1;
-    background: #111;
-    border: 1px solid #333;
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
     border-radius: 10px;
     padding: 0.6rem 0.8rem;
-    color: #e0e0e0;
+    color: #2d3748;
     font-size: 0.92rem;
     font-family: inherit;
   }
-  .idea-quick input:focus { outline: none; border-color: #fda085; }
+  .idea-quick input:focus { outline: none; border-color: #0ea5e9; }
   .idea-quick button {
-    background: linear-gradient(135deg, #fda085, #f5576c);
+    background: linear-gradient(135deg, #38bdf8, #0ea5e9);
     color: #fff;
     border: none;
     border-radius: 10px;
@@ -375,16 +377,16 @@
   }
   .idea-tag {
     padding: 0.22rem 0.6rem;
-    background: #222;
-    border: 1px solid #333;
+    background: #f0f7ff;
+    border: 1px solid #cbd5e1;
     border-radius: 8px;
     font-size: 0.78rem;
-    color: #aaa;
+    color: #64748b;
     cursor: pointer;
     transition: all 0.2s;
     font-family: inherit;
   }
-  .idea-tag.active { border-color: #fda08588; color: #fda085; background: #fda08520; }
+  .idea-tag.active { border-color: #0ea5e988; color: #0ea5e9; background: #0ea5e920; }
   .idea-filter-row {
     display: flex;
     gap: 0.35rem;
@@ -394,26 +396,27 @@
   .idea-filter {
     padding: 0.2rem 0.55rem;
     background: transparent;
-    border: 1px solid #333;
+    border: 1px solid #cbd5e1;
     border-radius: 7px;
     font-size: 0.72rem;
-    color: #666;
+    color: #94a3b8;
     cursor: pointer;
     font-family: inherit;
     transition: all 0.15s;
   }
-  .idea-filter.active { border-color: #fda08566; color: #fda085; }
+  .idea-filter.active { border-color: #0ea5e966; color: #0ea5e9; }
   .idea-card {
-    background: #1a1a1a;
-    border: 1px solid #2a2a2a;
+    background: #fff;
+    border: 1px solid #e0ecf5;
     border-radius: 12px;
     padding: 0.8rem 1rem;
     margin-bottom: 0.5rem;
     display: flex;
-    justify-content: space-between;
     align-items: flex-start;
-    gap: 0.5rem;
+    gap: 0.6rem;
     animation: fadeIn 0.25s ease;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
   }
   .idea-card-body { flex: 1; min-width: 0; }
   .idea-card-text { font-size: 0.88rem; line-height: 1.5; word-break: break-word; }
@@ -427,10 +430,10 @@
     font-size: 0.7rem;
     padding: 0.1rem 0.4rem;
     border-radius: 5px;
-    background: #fda08518;
-    color: #fda085;
+    background: #0ea5e918;
+    color: #0ea5e9;
   }
-  .idea-card-time { font-size: 0.68rem; color: #555; }
+  .idea-card-time { font-size: 0.68rem; color: #94a3b8; }
   .idea-card-actions {
     display: flex;
     flex-direction: column;
@@ -440,15 +443,34 @@
   .idea-card-actions button {
     background: none;
     border: none;
-    color: #444;
+    color: #94a3b8;
     cursor: pointer;
     font-size: 0.75rem;
     padding: 0.15rem 0.3rem;
     border-radius: 5px;
     transition: all 0.15s;
   }
-  .idea-card-actions button:hover { color: #fda085; background: #fda08515; }
-  .idea-card-actions .btn-del:hover { color: #f5576c; background: #f5576c15; }
+  .idea-card-actions button:hover { color: #0ea5e9; background: #0ea5e915; }
+  .idea-card-actions .btn-del:hover { color: #0284c7; background: #0ea5e915; }
+  .idea-card.selected { border-color: #0ea5e966; background: #0ea5e910; }
+  .idea-check {
+    width: 18px; height: 18px;
+    border-radius: 5px;
+    border: 1.5px solid #cbd5e1;
+    background: transparent;
+    cursor: pointer;
+    flex-shrink: 0;
+    margin-top: 0.15rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    color: transparent;
+    transition: all 0.15s;
+  }
+  .idea-card.selected .idea-check { border-color: #0ea5e9; background: #38bdf8; color: #fff; }
+  .select-hint { font-size: 0.72rem; color: #94a3b8; margin-bottom: 0.6rem; }
+  .selected-count { color: #0ea5e9; font-weight: 600; }
 
   /* ====== 选题看板 ====== */
   .kanban {
@@ -460,8 +482,8 @@
   .kanban-col {
     flex: 1;
     min-width: 150px;
-    background: #141414;
-    border: 1px solid #2a2a2a;
+    background: #f8fafc;
+    border: 1px solid #e0ecf5;
     border-radius: 14px;
     padding: 0.7rem;
   }
@@ -478,18 +500,18 @@
     border-radius: 50%;
     display: inline-block;
   }
-  .dot-want { background: #fda085; }
-  .dot-doing { background: #a78bfa; }
-  .dot-done { background: #4ade80; }
+  .dot-want { background: #38bdf8; }
+  .dot-doing { background: #8b5cf6; }
+  .dot-done { background: #22c55e; }
   .kanban-col-count {
     font-size: 0.68rem;
-    color: #555;
+    color: #94a3b8;
     font-weight: 400;
     margin-left: auto;
   }
   .kanban-card {
-    background: #1a1a1a;
-    border: 1px solid #2a2a2a;
+    background: #fff;
+    border: 1px solid #e0ecf5;
     border-radius: 10px;
     padding: 0.65rem 0.75rem;
     margin-bottom: 0.4rem;
@@ -507,7 +529,7 @@
   }
   .kanban-card-source {
     font-size: 0.65rem;
-    color: #555;
+    color: #94a3b8;
     margin-top: 0.3rem;
   }
   .kanban-card-actions {
@@ -520,45 +542,45 @@
   .kanban-card-actions button {
     background: none;
     border: none;
-    color: #444;
+    color: #94a3b8;
     cursor: pointer;
     font-size: 0.7rem;
     padding: 0.1rem 0.25rem;
     border-radius: 4px;
   }
-  .kanban-card-actions button:hover { color: #f5576c; background: #f5576c15; }
+  .kanban-card-actions button:hover { color: #0284c7; background: #0ea5e915; }
   .kanban-add {
     width: 100%;
     padding: 0.4rem;
     background: transparent;
-    border: 1px dashed #333;
+    border: 1px dashed #cbd5e1;
     border-radius: 8px;
-    color: #555;
+    color: #94a3b8;
     font-size: 0.75rem;
     cursor: pointer;
     font-family: inherit;
     transition: all 0.15s;
   }
-  .kanban-add:hover { border-color: #555; color: #888; }
+  .kanban-add:hover { border-color: #94a3b8; color: #64748b; }
   .kanban-input-wrap { margin-bottom: 0.4rem; }
   .kanban-input-wrap input {
     width: 100%;
-    background: #111;
-    border: 1px solid #444;
+    background: #f8fafc;
+    border: 1px solid #bae6fd;
     border-radius: 8px;
     padding: 0.45rem 0.6rem;
-    color: #e0e0e0;
+    color: #2d3748;
     font-size: 0.82rem;
     font-family: inherit;
   }
-  .kanban-input-wrap input:focus { outline: none; border-color: #fda085; }
+  .kanban-input-wrap input:focus { outline: none; border-color: #0ea5e9; }
 
   .drop-hint {
-    border: 2px dashed #f5576c55;
+    border: 2px dashed #38bdf855;
     border-radius: 10px;
     padding: 0.8rem;
     text-align: center;
-    color: #f5576c55;
+    color: #0284c755;
     font-size: 0.75rem;
     margin-bottom: 0.4rem;
   }
@@ -566,7 +588,7 @@
 </head>
 <body>
 <div class="container">
-  <h1>📓 每日微日记</h1>
+  <h1>📓 Kacey 微记</h1>
 
   <div class="tabs">
     <button class="tab-btn active" onclick="switchTab('journal')">📓 日记</button>
@@ -659,6 +681,40 @@
       <button class="idea-filter" data-filter="画面">画面</button>
       <button class="idea-filter" data-filter="BGM">BGM</button>
       <button class="idea-filter" data-filter="其他">其他</button>
+    </div>
+
+    <div class="toolbar">
+      <button onclick="toggleIdeaCopy()">📝 生成视频文案</button>
+    </div>
+
+    <div class="copywriter-panel" id="ideaCopyPanel">
+      <h3>🎬 视频文案生成器</h3>
+      <div style="margin-bottom:0.6rem">
+        <div style="font-size:0.78rem;color:#888;margin-bottom:0.3rem">视频类型</div>
+        <div class="style-chips" id="videoStyleChips">
+          <button class="style-chip active" data-style="vlog">Vlog</button>
+          <button class="style-chip" data-style="tutorial">教程</button>
+          <button class="style-chip" data-style="story">故事</button>
+          <button class="style-chip" data-style="review">测评</button>
+        </div>
+      </div>
+      <div style="margin-bottom:0.6rem">
+        <div style="font-size:0.78rem;color:#888;margin-bottom:0.3rem">语言</div>
+        <div class="style-chips" id="langChips">
+          <button class="style-chip active" data-lang="zh">中文</button>
+          <button class="style-chip" data-lang="en">English</button>
+          <button class="style-chip" data-lang="zh-en">中英双语</button>
+          <button class="style-chip" data-lang="zh-fr">中法双语</button>
+          <button class="style-chip" data-lang="zh-es">中西双语</button>
+        </div>
+      </div>
+      <div class="select-hint">💡 在下方灵感列表中勾选要用的素材（不选则用最新的）<span class="selected-count" id="selectedCount"></span></div>
+      <button class="gen-btn" onclick="generateVideoCopy()">🎬 生成视频文案</button>
+      <div class="gen-hint">从选中的灵感提取素材，生成标题+脚本+标签</div>
+      <div class="copy-output" id="videoCopyOutput" style="display:none">
+        <button class="copy-btn" onclick="copyVideoCopyText()">复制</button>
+        <span id="videoCopyText"></span>
+      </div>
     </div>
 
     <div class="section-header">灵感库 <span id="ideaCount" style="font-size:0.75rem;color:#555"></span></div>
@@ -916,7 +972,7 @@ function exportMarkdown() {
   const entries = load(KEYS.entries);
   if (!entries.length) { showToast('❌ 没有记录'); return; }
   const { streak } = calcStreak();
-  let md = `# 📓 每日微日记\n\n> 连续打卡 ${streak} 天 | 共 ${entries.length} 条记录\n\n---\n\n`;
+  let md = `# 📓 Kacey 微记\n\n> 连续打卡 ${streak} 天 | 共 ${entries.length} 条记录\n\n---\n\n`;
   entries.forEach(e => {
     md += `## ${formatDate(e.date)}\n\n`;
     if (e.highlight) md += `- ✨ **亮点**：${e.highlight}\n`;
@@ -988,7 +1044,8 @@ function renderIdeas() {
   if (!ideas.length) { el.innerHTML = '<div class="empty">还没有灵感，随时记下你的想法 ⚡</div>'; return; }
   if (!filtered.length) { el.innerHTML = '<div class="no-results">该分类暂无灵感</div>'; return; }
   el.innerHTML = filtered.map(i => `
-    <div class="idea-card">
+    <div class="idea-card${selectedIdeas.has(i.id)?' selected':''}" onclick="toggleIdeaSelect('${i.id}')">
+      <div class="idea-check">✓</div>
       <div class="idea-card-body">
         <div class="idea-card-text">${esc(i.text)}</div>
         <div class="idea-card-meta">
@@ -997,11 +1054,271 @@ function renderIdeas() {
         </div>
       </div>
       <div class="idea-card-actions">
-        <button onclick="ideaToKanban('${i.id}')" title="转为选题">🎬</button>
-        <button class="btn-del" onclick="deleteIdea('${i.id}')" title="删除">✕</button>
+        <button onclick="event.stopPropagation();ideaToKanban('${i.id}')" title="转为选题">🎬</button>
+        <button class="btn-del" onclick="event.stopPropagation();deleteIdea('${i.id}')" title="删除">✕</button>
       </div>
     </div>
   `).join('');
+}
+
+// ============ 灵感选择 ============
+const selectedIdeas = new Set();
+
+function toggleIdeaSelect(id) {
+  if (selectedIdeas.has(id)) selectedIdeas.delete(id);
+  else selectedIdeas.add(id);
+  renderIdeas();
+  updateSelectedCount();
+}
+
+function updateSelectedCount() {
+  const el = document.getElementById('selectedCount');
+  if (el) el.textContent = selectedIdeas.size ? `（已选 ${selectedIdeas.size} 条）` : '';
+}
+
+// ============ 灵感文案生成 ============
+let videoStyle = 'vlog';
+let videoLang = 'zh';
+
+function toggleIdeaCopy() { document.getElementById('ideaCopyPanel').classList.toggle('show'); }
+
+document.getElementById('videoStyleChips').addEventListener('click', e => {
+  const c = e.target.closest('.style-chip');
+  if (!c) return;
+  document.querySelectorAll('#videoStyleChips .style-chip').forEach(b => b.classList.remove('active'));
+  c.classList.add('active');
+  videoStyle = c.dataset.style;
+});
+document.getElementById('langChips').addEventListener('click', e => {
+  const c = e.target.closest('.style-chip');
+  if (!c) return;
+  document.querySelectorAll('#langChips .style-chip').forEach(b => b.classList.remove('active'));
+  c.classList.add('active');
+  videoLang = c.dataset.lang;
+});
+
+async function translateText(text, targetLang) {
+  if (!text || targetLang === 'zh') return text;
+  const langMap = { en: 'en', fr: 'fr', es: 'es' };
+  const to = langMap[targetLang];
+  if (!to) return text;
+  try {
+    const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=zh|${to}`);
+    const data = await res.json();
+    if (data.responseStatus === 200 && data.responseData.translatedText) {
+      const t = data.responseData.translatedText;
+      if (t.toUpperCase() === text.toUpperCase()) return text;
+      return t;
+    }
+    return text;
+  } catch { return text; }
+}
+
+async function translateAll(texts, targetLang) {
+  if (targetLang === 'zh') return texts;
+  const results = [];
+  for (const t of texts) {
+    results.push(await translateText(t, targetLang));
+  }
+  return results;
+}
+
+async function generateVideoCopy() {
+  const allIdeas = load(KEYS.ideas);
+  if (!allIdeas.length) { showToast('❌ 先记几条灵感吧'); return; }
+  const ideas = selectedIdeas.size > 0 ? allIdeas.filter(i => selectedIdeas.has(i.id)) : allIdeas;
+  const topics = ideas.filter(i => i.tag === '选题').map(i => i.text);
+  const lines = ideas.filter(i => i.tag === '台词').map(i => i.text);
+  const scenes = ideas.filter(i => i.tag === '画面').map(i => i.text);
+  const bgm = ideas.filter(i => i.tag === 'BGM').map(i => i.text);
+  const all = ideas.map(i => i.text);
+  const main = topics[0] || all[0];
+
+  const needsTranslation = videoLang !== 'zh';
+  const foreignLang = videoLang === 'en' ? 'en' : videoLang === 'zh-en' ? 'en' : videoLang === 'zh-fr' ? 'fr' : videoLang === 'zh-es' ? 'es' : null;
+
+  let tMain = main, tLines = [...lines], tScenes = [...scenes], tBgm = [...bgm], tTopics = [...topics];
+  if (needsTranslation && foreignLang) {
+    showToast('🌐 正在翻译...');
+    const allTexts = [main, ...lines.slice(0,1), ...scenes.slice(0,1), ...bgm.slice(0,1)];
+    const translated = await translateAll(allTexts, foreignLang);
+    let idx = 0;
+    tMain = translated[idx++];
+    if (lines[0]) tLines[0] = translated[idx++];
+    if (scenes[0]) tScenes[0] = translated[idx++];
+    if (bgm[0]) tBgm[0] = translated[idx++];
+    tTopics = [tMain];
+  }
+
+  const langs = {
+    zh: {
+      title: '标题', script: '脚本', opening: '开场', body: '主体', closing: '结尾',
+      tags: '标签', sceneTip: '画面提示', bgmTip: 'BGM建议', refNote: '原始素材',
+      topicIntro: '今天的主题：',
+      lineIntro: '台词素材：',
+      vlog: {
+        open: '嗨大家好！今天想跟你们分享一个我最近一直在想的事情。',
+        bodyWithLine: '说到这个话题，我想先跟你们聊聊我的感受...',
+        bodyNoLine: '这件事其实特别有意思，让我慢慢说...',
+        close: '好啦今天就到这里，喜欢的话记得点赞关注，我们下期见！',
+      },
+      tut: {
+        open: '今天教大家一个超实用的技巧，看完你一定会有收获。',
+        bodyWithLine: '第一步，我们先来理解核心概念...',
+        bodyNoLine: '首先我们来看看具体怎么操作...',
+        close: '以上就是全部步骤，学会了吗？评论区告诉我！',
+      },
+      story: {
+        open: '你们知道吗？今天要跟大家分享一个让我特别有感触的故事。',
+        bodyWithLine: '事情是这样的——',
+        bodyNoLine: '接下来发生的事，让我自己都没想到...',
+        close: '故事讲完了，你怎么看？留言告诉我。',
+      },
+      rev: {
+        open: '今天来聊一个大家都很关心的话题，到底值不值？',
+        bodyWithLine: '先说我的第一印象和使用感受...',
+        bodyNoLine: '用了一段时间，说说我的真实感受...',
+        close: '总结一下，值不值得入手？我的建议是...',
+      },
+      hashTags: '#vlog #生活记录 #日常分享',
+    },
+    en: {
+      title: 'Title', script: 'Script', opening: 'Opening', body: 'Body', closing: 'Closing',
+      tags: 'Tags', sceneTip: 'Visual Notes', bgmTip: 'BGM Suggestion', refNote: 'Source material',
+      topicIntro: "Today's topic: ",
+      lineIntro: 'Script notes: ',
+      vlog: {
+        open: "Hey everyone! Today I want to share something that's been on my mind lately.",
+        bodyWithLine: "Let me start by telling you how I feel about this...",
+        bodyNoLine: "This is actually really interesting, let me tell you...",
+        close: "That's all for today! Like and subscribe, see you next time!",
+      },
+      tut: {
+        open: "Today I'll teach you a super useful trick — you'll definitely learn something new.",
+        bodyWithLine: "Step one: let's understand the core concept first...",
+        bodyNoLine: "First, let's see how it actually works...",
+        close: "That's all the steps! Did you get it? Let me know in the comments!",
+      },
+      story: {
+        open: "Did you know? Today I want to share a story that really moved me.",
+        bodyWithLine: "Here's what happened —",
+        bodyNoLine: "What happened next surprised even me...",
+        close: "That's the story. What do you think? Leave a comment.",
+      },
+      rev: {
+        open: "Let's talk about something everyone's been curious about — is it worth it?",
+        bodyWithLine: "Let me start with my first impression and experience...",
+        bodyNoLine: "After using it for a while, here's my honest take...",
+        close: "So, is it worth getting? Here's my verdict...",
+      },
+      hashTags: '#vlog #lifestyle #dailylife',
+    },
+    fr: {
+      title: 'Titre', script: 'Script', opening: 'Ouverture', body: 'Corps', closing: 'Conclusion',
+      tags: 'Tags', sceneTip: 'Notes visuelles', bgmTip: 'Suggestion BGM', refNote: 'Matériel source',
+      topicIntro: "Le sujet d'aujourd'hui : ",
+      lineIntro: 'Notes de script : ',
+      vlog: {
+        open: "Salut tout le monde ! Aujourd'hui je veux partager quelque chose qui me tient à cœur.",
+        bodyWithLine: "Laissez-moi d'abord vous dire ce que j'en pense...",
+        bodyNoLine: "C'est vraiment intéressant, laissez-moi vous raconter...",
+        close: "C'est tout pour aujourd'hui ! Likez et abonnez-vous, à la prochaine !",
+      },
+      tut: {
+        open: "Aujourd'hui je vous montre une astuce super utile — vous allez forcément apprendre quelque chose.",
+        bodyWithLine: "Première étape : comprenons d'abord le concept de base...",
+        bodyNoLine: "D'abord, voyons comment ça marche concrètement...",
+        close: "Voilà toutes les étapes ! Vous avez compris ? Dites-moi en commentaire !",
+      },
+      story: {
+        open: "Vous saviez ? Aujourd'hui je veux partager une histoire qui m'a vraiment touché(e).",
+        bodyWithLine: "Voici ce qui s'est passé —",
+        bodyNoLine: "Ce qui s'est passé ensuite m'a surpris(e) moi-même...",
+        close: "Voilà l'histoire. Qu'en pensez-vous ? Laissez un commentaire.",
+      },
+      rev: {
+        open: "Parlons d'un sujet qui intéresse tout le monde — est-ce que ça vaut le coup ?",
+        bodyWithLine: "Commençons par ma première impression et mon expérience...",
+        bodyNoLine: "Après l'avoir utilisé un moment, voici mon avis honnête...",
+        close: "Alors, ça vaut le coup ? Voici mon verdict...",
+      },
+      hashTags: '#vlog #lifestyle #quotidien',
+    },
+    es: {
+      title: 'Título', script: 'Guión', opening: 'Apertura', body: 'Cuerpo', closing: 'Cierre',
+      tags: 'Etiquetas', sceneTip: 'Notas visuales', bgmTip: 'Sugerencia BGM', refNote: 'Material fuente',
+      topicIntro: 'El tema de hoy: ',
+      lineIntro: 'Notas del guión: ',
+      vlog: {
+        open: "¡Hola a todos! Hoy quiero compartir algo en lo que he estado pensando últimamente.",
+        bodyWithLine: "Déjenme empezar contándoles cómo me siento al respecto...",
+        bodyNoLine: "Esto es realmente interesante, déjenme contarles...",
+        close: "¡Eso es todo por hoy! Dale like y suscríbete, ¡nos vemos!",
+      },
+      tut: {
+        open: "Hoy les enseño un truco súper útil — seguro aprenden algo nuevo.",
+        bodyWithLine: "Primer paso: entendamos primero el concepto base...",
+        bodyNoLine: "Primero, veamos cómo funciona en la práctica...",
+        close: "¡Esos son todos los pasos! ¿Lo lograron? ¡Díganme en los comentarios!",
+      },
+      story: {
+        open: "¿Sabían? Hoy quiero compartir una historia que me impactó mucho.",
+        bodyWithLine: "Esto es lo que pasó —",
+        bodyNoLine: "Lo que pasó después me sorprendió incluso a mí...",
+        close: "Esa es la historia. ¿Qué opinan? Dejen un comentario.",
+      },
+      rev: {
+        open: "Hablemos de algo que a todos les interesa — ¿vale la pena?",
+        bodyWithLine: "Empecemos con mi primera impresión y experiencia...",
+        bodyNoLine: "Después de usarlo un tiempo, aquí va mi opinión honesta...",
+        close: "Entonces, ¿vale la pena? Mi veredicto es...",
+      },
+      hashTags: '#vlog #estilodevida #vidadiaria',
+    },
+  };
+
+  const styleKey = { vlog:'vlog', tutorial:'tut', story:'story', review:'rev' }[videoStyle];
+
+  function buildScript(L, topic, line, scene, bgmItem) {
+    const S = L[styleKey];
+    let out = [];
+    out.push(`📌 ${L.title}`);
+    out.push(`${L.topicIntro}「${topic}」`);
+    out.push('');
+    out.push(`📝 ${L.script}:`);
+    out.push(`[${L.opening}] ${S.open}`);
+    out.push(`[${L.body}] ${line ? S.bodyWithLine : S.bodyNoLine}`);
+    if (line) out.push(`  💬 ${L.lineIntro}「${line}」`);
+    if (scene) out.push(`  🎥 ${L.sceneTip}: ${scene}`);
+    out.push(`[${L.closing}] ${S.close}`);
+    if (bgmItem) out.push(`\n🎵 ${L.bgmTip}: ${bgmItem}`);
+    out.push(`\n🏷️ ${L.tags}: ${L.hashTags}`);
+    return out.join('\n');
+  }
+
+  const zhScript = buildScript(langs.zh, main, lines[0], scenes[0], bgm[0]);
+  const foreignLangMap = { en: langs.en, fr: langs.fr, es: langs.es };
+  const foreignScript = foreignLang ? buildScript(foreignLangMap[foreignLang], tMain, tLines[0], tScenes[0], tBgm[0]) : '';
+
+  let result = '';
+  if (videoLang === 'zh') {
+    result = zhScript;
+  } else if (videoLang === 'en') {
+    result = foreignScript;
+  } else if (videoLang === 'zh-en') {
+    result = '🇨🇳 中文版\n' + zhScript + '\n\n━━━━━━━━━━\n\n🇬🇧 English Version\n' + foreignScript;
+  } else if (videoLang === 'zh-fr') {
+    result = '🇨🇳 中文版\n' + zhScript + '\n\n━━━━━━━━━━\n\n🇫🇷 Version Française\n' + foreignScript;
+  } else if (videoLang === 'zh-es') {
+    result = '🇨🇳 中文版\n' + zhScript + '\n\n━━━━━━━━━━\n\n🇪🇸 Versión en Español\n' + foreignScript;
+  }
+
+  document.getElementById('videoCopyOutput').style.display = 'block';
+  document.getElementById('videoCopyText').textContent = result;
+}
+
+function copyVideoCopyText() {
+  navigator.clipboard.writeText(document.getElementById('videoCopyText').textContent).then(() => showToast('📋 已复制'));
 }
 
 // ============ 选题看板 ============
