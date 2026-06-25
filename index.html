@@ -347,7 +347,7 @@
     gap: 0.5rem;
     margin-bottom: 0.8rem;
   }
-  .idea-quick input {
+  .idea-quick textarea {
     flex: 1;
     background: #f8fafc;
     border: 1px solid #cbd5e1;
@@ -356,8 +356,10 @@
     color: #2d3748;
     font-size: 0.92rem;
     font-family: inherit;
+    resize: none;
+    line-height: 1.5;
   }
-  .idea-quick input:focus { outline: none; border-color: #0ea5e9; }
+  .idea-quick textarea:focus { outline: none; border-color: #0ea5e9; }
   .idea-quick button {
     background: linear-gradient(135deg, #38bdf8, #0ea5e9);
     color: #fff;
@@ -786,7 +788,7 @@
   <div class="tab-page" id="page-ideas">
     <div class="input-card">
       <div class="idea-quick">
-        <input type="text" id="ideaInput" placeholder="一句话记下灵感..." onkeydown="if(event.key==='Enter')saveIdea()">
+        <textarea id="ideaInput" placeholder="记下灵感，可换行..." rows="2" onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();saveIdea()}"></textarea>
         <button onclick="saveIdea()">记💡</button>
       </div>
       <div class="idea-tags" id="ideaTagPicker">
@@ -1077,6 +1079,7 @@ function renderTimeline() {
     const ri = entries.indexOf(e);
     return `<div class="entry">
       <div class="entry-actions">
+        <button onclick="editEntry(${ri})" title="编辑">✏️</button>
         <button title="转为选题" onclick="entryToKanban(${ri})">🎬</button>
         <button class="btn-copy" onclick="copyEntry(${ri})" title="复制">📋</button>
         <button onclick="deleteEntry(${ri})" title="删除">✕</button>
@@ -1087,6 +1090,23 @@ function renderTimeline() {
       ${e.goal ? `<div class="entry-row"><span class="tag tag-goal">目标</span><span>${highlightText(e.goal,q)}</span></div>` : ''}
     </div>`;
   }).join('');
+}
+
+async function editEntry(i) {
+  const e = load('entries')[i];
+  if (!e) return;
+  const h = prompt('✨ 今日亮点：', e.highlight || '');
+  if (h === null) return;
+  const l = prompt('💡 一个收获：', e.lesson || '');
+  if (l === null) return;
+  const g = prompt('🎯 明日目标：', e.goal || '');
+  if (g === null) return;
+  await sb.from('entries').update({ highlight: h.trim(), lesson: l.trim(), goal: g.trim() }).eq('id', e._id);
+  e.highlight = h.trim();
+  e.lesson = l.trim();
+  e.goal = g.trim();
+  renderTimeline();
+  showToast('✏️ 已修改');
 }
 
 async function deleteEntry(i) {
@@ -1238,6 +1258,17 @@ async function saveIdea() {
   renderIdeas();
 }
 
+async function editIdea(id) {
+  const idea = cachedIdeas.find(i => i.id === id);
+  if (!idea) return;
+  const newText = prompt('编辑灵感：', idea.text);
+  if (newText === null || newText.trim() === '') return;
+  await sb.from('ideas').update({ text: newText.trim() }).eq('id', id);
+  idea.text = newText.trim();
+  renderIdeas();
+  showToast('✏️ 已修改');
+}
+
 async function deleteIdea(id) {
   await sb.from('ideas').delete().eq('id', id);
   cachedIdeas = cachedIdeas.filter(i => i.id !== id);
@@ -1272,6 +1303,7 @@ function renderIdeas() {
         </div>
       </div>
       <div class="idea-card-actions">
+        <button onclick="event.stopPropagation();editIdea('${i.id}')" title="编辑">✏️</button>
         <button onclick="event.stopPropagation();ideaToKanban('${i.id}')" title="转为选题">🎬</button>
         <button class="btn-del" onclick="event.stopPropagation();deleteIdea('${i.id}')" title="删除">✕</button>
       </div>
