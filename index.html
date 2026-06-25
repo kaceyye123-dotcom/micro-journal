@@ -566,7 +566,7 @@
   }
   .kanban-add:hover { border-color: #94a3b8; color: #64748b; }
   .kanban-input-wrap { margin-bottom: 0.4rem; }
-  .kanban-input-wrap input {
+  .kanban-input-wrap textarea {
     width: 100%;
     background: #f8fafc;
     border: 1px solid #bae6fd;
@@ -575,8 +575,10 @@
     color: #2d3748;
     font-size: 0.82rem;
     font-family: inherit;
+    resize: none;
+    line-height: 1.4;
   }
-  .kanban-input-wrap input:focus { outline: none; border-color: #0ea5e9; }
+  .kanban-input-wrap textarea:focus { outline: none; border-color: #0ea5e9; }
 
   .drop-hint {
     border: 2px dashed #38bdf855;
@@ -855,7 +857,7 @@
         <div id="col-want"></div>
         <button class="kanban-add" onclick="showKanbanInput('want')">+ 添加选题</button>
         <div class="kanban-input-wrap" id="input-want" style="display:none">
-          <input type="text" placeholder="输入选题..." onkeydown="if(event.key==='Enter')addKanbanCard('want',this.value)">
+          <textarea placeholder="输入选题，Enter换行，Shift+Enter保存" rows="2" onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();addKanbanCard('want',this.value)}"></textarea>
         </div>
       </div>
       <div class="kanban-col" data-status="doing" ondrop="kanbanDrop(event,'doing')" ondragover="event.preventDefault()">
@@ -863,7 +865,7 @@
         <div id="col-doing"></div>
         <button class="kanban-add" onclick="showKanbanInput('doing')">+ 添加选题</button>
         <div class="kanban-input-wrap" id="input-doing" style="display:none">
-          <input type="text" placeholder="输入选题..." onkeydown="if(event.key==='Enter')addKanbanCard('doing',this.value)">
+          <textarea placeholder="输入选题..." rows="2" onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();addKanbanCard('doing',this.value)}"></textarea>
         </div>
       </div>
       <div class="kanban-col" data-status="done" ondrop="kanbanDrop(event,'done')" ondragover="event.preventDefault()">
@@ -871,7 +873,7 @@
         <div id="col-done"></div>
         <button class="kanban-add" onclick="showKanbanInput('done')">+ 添加选题</button>
         <div class="kanban-input-wrap" id="input-done" style="display:none">
-          <input type="text" placeholder="输入选题..." onkeydown="if(event.key==='Enter')addKanbanCard('done',this.value)">
+          <textarea placeholder="输入选题..." rows="2" onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();addKanbanCard('done',this.value)}"></textarea>
         </div>
       </div>
     </div>
@@ -1585,6 +1587,7 @@ function renderKanban() {
         <div class="kanban-card-title">${esc(c.title)}</div>
         ${c.source ? `<div class="kanban-card-source">来自${esc(c.source)}</div>` : ''}
         <div class="kanban-card-actions">
+          <button onclick="editKanbanCard('${c.id}')" title="编辑">✏️</button>
           <button onclick="deleteKanbanCard('${c.id}')" title="删除">✕</button>
         </div>
       </div>
@@ -1595,7 +1598,7 @@ function renderKanban() {
 function showKanbanInput(status) {
   const wrap = document.getElementById('input-' + status);
   wrap.style.display = wrap.style.display === 'none' ? 'block' : 'none';
-  if (wrap.style.display === 'block') wrap.querySelector('input').focus();
+  if (wrap.style.display === 'block') wrap.querySelector('textarea').focus();
 }
 
 async function addKanbanCard(status, title) {
@@ -1604,10 +1607,21 @@ async function addKanbanCard(status, title) {
   const { data } = await sb.from('kanban').insert({ user_id: currentUser.id, title, status, source: '' }).select().single();
   if (data) cachedKanban.push({ ...data, id: data.id, _id: data.id });
   const wrap = document.getElementById('input-' + status);
-  wrap.querySelector('input').value = '';
+  wrap.querySelector('textarea').value = '';
   wrap.style.display = 'none';
   renderKanban();
   showToast('🎬 已添加');
+}
+
+async function editKanbanCard(id) {
+  const card = cachedKanban.find(i => i.id === id);
+  if (!card) return;
+  const newTitle = prompt('编辑选题：', card.title);
+  if (newTitle === null || newTitle.trim() === '') return;
+  await sb.from('kanban').update({ title: newTitle.trim() }).eq('id', id);
+  card.title = newTitle.trim();
+  renderKanban();
+  showToast('✏️ 已修改');
 }
 
 async function deleteKanbanCard(id) {
